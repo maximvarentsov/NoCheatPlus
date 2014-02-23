@@ -21,16 +21,6 @@ import fr.neatmonster.nocheatplus.utilities.StringUtil;
 import fr.neatmonster.nocheatplus.utilities.TrigUtil;
 import fr.neatmonster.nocheatplus.utilities.build.BuildParameters;
 
-/*
- * MP""""""`MM                            oo                   dP MM""""""""`M dP          
- * M  mmmmm..M                                                 88 MM  mmmmmmmM 88          
- * M.      `YM dP    dP 88d888b. dP   .dP dP dP   .dP .d8888b. 88 M'      MMMM 88 dP    dP 
- * MMMMMMM.  M 88    88 88'  `88 88   d8' 88 88   d8' 88'  `88 88 MM  MMMMMMMM 88 88    88 
- * M. .MMM'  M 88.  .88 88       88 .88'  88 88 .88'  88.  .88 88 MM  MMMMMMMM 88 88.  .88 
- * Mb.     .dM `88888P' dP       8888P'   dP 8888P'   `88888P8 dP MM  MMMMMMMM dP `8888P88 
- * MMMMMMMMMMM                                                    MMMMMMMMMMMM         .88 
- *                                                                                 d8888P  
- */
 /**
  * The counterpart to the CreativeFly check. People that are not allowed to fly get checked by this. It will try to
  * identify when they are jumping, check if they aren't jumping too high or far, check if they aren't moving too fast on
@@ -74,6 +64,9 @@ public class SurvivalFly extends Check {
 	
 	
 	private final Set<String> reallySneaking = new HashSet<String>(30);
+	
+	/** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc = new Location(null, 0, 0, 0);
 	
     /**
      * Instantiates a new survival fly check.
@@ -233,24 +226,15 @@ public class SurvivalFly extends Check {
 		}
 		
 		// Prevent players from sprinting if they're moving backwards (allow buffers to cover up !?).
-        if (sprinting && data.lostSprintCount == 0) {
-        	// (Ignore if lost sprint is active, in order to forestall false positives.)
-        	// TODO: Check if still necessary to check here with timeSprinting change (...).
-        	// TODO: Find more ways to confine conditions.
-			final float yaw = from.getYaw();
-			if (xDistance < 0D && zDistance > 0D && yaw > 180F && yaw < 270F
-					|| xDistance < 0D && zDistance < 0D && yaw > 270F && yaw < 360F 
-					|| xDistance > 0D && zDistance < 0D && yaw > 0F && yaw < 90F 
-					|| xDistance > 0D && zDistance > 0D && yaw > 90F && yaw < 180F) {
+        if (sprinting && data.lostSprintCount == 0 && !cc.assumeSprint && hDistance > walkSpeed && data.hVelActive.isEmpty()) {
+        	// (Ignore some cases, in order to prevent false positives.)
+        	// TODO: speed effects ?
+        	if (TrigUtil.isMovingBackwards(xDistance, zDistance, from.getYaw()) && !player.hasPermission(Permissions.MOVING_SURVIVALFLY_SPRINTING)) {
 				// (Might have to account for speeding permissions.)
-				if (!player.hasPermission(Permissions.MOVING_SURVIVALFLY_SPRINTING)) {
-					// Expect full distance to be covered by buffers/velocity.
-					// TODO: Should this exclusively allow velocity (someone calculate margin)?
-					// TODO: Check if moving below is ok now (since sprinting flag was fixed).
-					hDistanceAboveLimit = Math.max(hDistanceAboveLimit, hDistance);
-					tags.add("sprintback"); // Might add it anyway.
-				}
-			}
+				// TODO: hDistance is too harsh?
+				hDistanceAboveLimit = Math.max(hDistanceAboveLimit, hDistance);
+				tags.add("sprintback"); // Might add it anyway.
+        	}
         }
 		
 		//////////////////////////
@@ -1363,7 +1347,10 @@ public class SurvivalFly extends Check {
 		}
 		if (data.sfCobwebVL < 550) { // Totally random !
 			// Silently set back.
-			if (!data.hasSetBack()) data.setSetBack(player.getLocation()); // ? check moment of call.
+			if (!data.hasSetBack()) {
+				data.setSetBack(player.getLocation(useLoc)); // ? check moment of call.
+				useLoc.setWorld(null);
+			}
 			data.sfJumpPhase = 0;
 			data.sfLastYDist = data.sfLastHDist = Double.MAX_VALUE;
 			return true;

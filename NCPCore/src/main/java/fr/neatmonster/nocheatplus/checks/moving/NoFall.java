@@ -12,19 +12,13 @@ import fr.neatmonster.nocheatplus.compat.BridgeHealth;
 import fr.neatmonster.nocheatplus.utilities.PlayerLocation;
 import fr.neatmonster.nocheatplus.utilities.StringUtil;
 
-/*
- * M"""""""`YM          MM""""""""`M          dP dP 
- * M  mmmm.  M          MM  mmmmmmmM          88 88 
- * M  MMMMM  M .d8888b. M'      MMMM .d8888b. 88 88 
- * M  MMMMM  M 88'  `88 MM  MMMMMMMM 88'  `88 88 88 
- * M  MMMMM  M 88.  .88 MM  MMMMMMMM 88.  .88 88 88 
- * M  MMMMM  M `88888P' MM  MMMMMMMM `88888P8 dP dP 
- * MMMMMMMMMMM          MMMMMMMMMMMM                
- */
 /**
  * A check to see if people cheat by tricking the server to not deal them fall damage.
  */
 public class NoFall extends Check {
+	
+	/** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc = new Location(null, 0, 0, 0);
 
     /**
      * Instantiates a new no fall check.
@@ -218,7 +212,8 @@ public class NoFall extends Check {
         if (data.noFallFallDistance - fallDistance > 0){
             // Might use tolerance, might log, might use method (compare: MovingListener.onEntityDamage).
             // Might consider triggering violations here as well.
-            final float yDiff = (float) (data.noFallMaxY - player.getLocation().getY());
+            final float yDiff = (float) (data.noFallMaxY - player.getLocation(useLoc).getY());
+            useLoc.setWorld(null);
             final float maxDist = Math.max(yDiff, Math.max(data.noFallFallDistance, fallDistance));
             player.setFallDistance(maxDist);
         }

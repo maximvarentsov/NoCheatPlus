@@ -24,15 +24,6 @@ import fr.neatmonster.nocheatplus.config.ConfigManager;
 import fr.neatmonster.nocheatplus.utilities.TickTask;
 import fr.neatmonster.nocheatplus.utilities.ds.prefixtree.SimpleCharPrefixTree;
 
-/*
- * MM'""""'YMM dP                  dP   M""MMMMMMMM oo            dP                                       
- * M' .mmm. `M 88                  88   M  MMMMMMMM               88                                       
- * M  MMMMMooM 88d888b. .d8888b. d8888P M  MMMMMMMM dP .d8888b. d8888P .d8888b. 88d888b. .d8888b. 88d888b. 
- * M  MMMMMMMM 88'  `88 88'  `88   88   M  MMMMMMMM 88 Y8ooooo.   88   88ooood8 88'  `88 88ooood8 88'  `88 
- * M. `MMM' .M 88    88 88.  .88   88   M  MMMMMMMM 88       88   88   88.  ... 88    88 88.  ... 88       
- * MM.     .dM dP    dP `88888P8   dP   M         M dP `88888P'   dP   `88888P' dP    dP `88888P' dP       
- * MMMMMMMMMMM                          MMMMMMMMMMM                                                        
- */
 /**
  * Central location to listen to events that are relevant for the chat checks.
  * 
@@ -121,28 +112,28 @@ public class ChatListener extends CheckListener implements INotifyReload, JoinLe
      * @param event
      *            the event
      */
-    @EventHandler(
-            ignoreCancelled = true, priority = EventPriority.LOWEST)
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     public void onPlayerChat(final AsyncPlayerChatEvent event) {
-        /*
-         *  ____  _                          ____ _           _   
-         * |  _ \| | __ _ _   _  ___ _ __   / ___| |__   __ _| |_ 
-         * | |_) | |/ _` | | | |/ _ \ '__| | |   | '_ \ / _` | __|
-         * |  __/| | (_| | |_| |  __/ |    | |___| | | | (_| | |_ 
-         * |_|   |_|\__,_|\__, |\___|_|     \____|_| |_|\__,_|\__|
-         *                |___/                                   
-         */
+    	
         final Player player = event.getPlayer();
+        final boolean alreadyCancelled = event.isCancelled();
         
         // Tell TickTask to update cached permissions.
+        // (Might omit this if already cancelled.)
+        // TODO: Implement to only update on "timeout" or checks being activated at all.
         TickTask.requestPermissionUpdate(player.getName(), CheckType.CHAT);
 
         // First the color check.
-        if (color.isEnabled(player)) event.setMessage(color.check(player, event.getMessage(), false));
+        if (!alreadyCancelled && color.isEnabled(player)) {
+        	event.setMessage(color.check(player, event.getMessage(), false));
+        }
 
         // Then the no chat check.
-        if (text.isEnabled(player) && text.check(player, event.getMessage(), captcha, false))
+        // TODO: isMainThread: Could consider event.isAsync ?
+        if (textChecks(player, event.getMessage(), false, alreadyCancelled)) {
         	event.setCancelled(true);
+        }
+        
     }
 
     /**
@@ -151,23 +142,8 @@ public class ChatListener extends CheckListener implements INotifyReload, JoinLe
      * @param event
      *            the event
      */
-    @EventHandler(
-            priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
-        /*
-         *  ____  _                          ____                                          _ 
-         * |  _ \| | __ _ _   _  ___ _ __   / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |
-         * | |_) | |/ _` | | | |/ _ \ '__| | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |
-         * |  __/| | (_| | |_| |  __/ |    | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
-         * |_|   |_|\__,_|\__, |\___|_|     \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
-         *                |___/                                                              
-         *  ____                                             
-         * |  _ \ _ __ ___ _ __  _ __ ___   ___ ___  ___ ___ 
-         * | |_) | '__/ _ \ '_ \| '__/ _ \ / __/ _ \/ __/ __|
-         * |  __/| | |  __/ |_) | | | (_) | (_|  __/\__ \__ \
-         * |_|   |_|  \___| .__/|_|  \___/ \___\___||___/___/
-         *                |_|                                
-         */
         final Player player = event.getPlayer();
         
         // Tell TickTask to update cached permissions.
@@ -207,16 +183,23 @@ public class ChatListener extends CheckListener implements INotifyReload, JoinLe
  		final boolean handleAsChat = chatCommands.hasAnyPrefixWords(lcMessage, lcAltMessage);
         if (handleAsChat){
             // Treat as chat.
-        	// TODO: At least cut off the command (!).
-            if (text.isEnabled(player) && text.check(player, message, captcha, true))
-                event.setCancelled(true);
+        	// TODO: Consider requesting permission updates on these, for consistency.
+        	// TODO: Cut off the command (?).
+            if (textChecks(player, message, true, false)) {
+            	event.setCancelled(true);
+            }
         }
         else if (!commandExclusions.hasAnyPrefixWords(lcMessage, lcAltMessage)){
             // Treat as command.
-            if (commands.isEnabled(player) && commands.check(player, message, captcha))
-                event.setCancelled(true);
+            if (commands.isEnabled(player) && commands.check(player, message, captcha)) {
+            	event.setCancelled(true);
+            }
         }
 
+    }
+    
+    private boolean textChecks(final Player player, final String message, final boolean isMainThread, final boolean alreadyCancelled) {
+    	return text.isEnabled(player) && text.check(player, message, captcha, isMainThread, alreadyCancelled);
     }
 
 	/**

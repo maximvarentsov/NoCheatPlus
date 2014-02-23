@@ -20,6 +20,8 @@ public class TrigUtil {
 	public static final double fRadToGrad = 360.0 / (2.0 * Math.PI);
 	/** Some default precision value for the directionCheck method. */
 	public static final double DIRECTION_PRECISION = 2.6;
+	
+	private static final Location useLoc = new Location(null, 0, 0, 0);
 
 	/**
 	 * Check if a player looks at a target of a specific size, with a specific
@@ -43,9 +45,11 @@ public class TrigUtil {
 	 */
 	public static double directionCheck(final Player player, final double targetX, final double targetY, final double targetZ, final double targetWidth, final double targetHeight, final double precision)
 	{
-		final Location loc = player.getLocation();
+		final Location loc = player.getLocation(useLoc);
 		final Vector dir = loc.getDirection();
-		return directionCheck(loc.getX(), loc.getY() + player.getEyeHeight(), loc.getZ(), dir.getX(), dir.getY(), dir.getZ(), targetX, targetY, targetZ, targetWidth, targetHeight, precision);
+		final double res = directionCheck(loc.getX(), loc.getY() + player.getEyeHeight(), loc.getZ(), dir.getX(), dir.getY(), dir.getZ(), targetX, targetY, targetZ, targetWidth, targetHeight, precision);
+		useLoc.setWorld(null);
+		return res;
 	}
 
 	/**
@@ -383,6 +387,18 @@ public class TrigUtil {
 	}
 	
 	/**
+	 * Manhattan distance.
+	 * @param x1
+	 * @param y1
+	 * @param z1
+	 * @param block
+	 * @return
+	 */
+	public static int manhattan(final int x1, final int y1, final int  z1, final Block block) {
+		return manhattan(x1, y1, z1, block.getX(), block.getY(), block.getZ());
+	}
+	
+	/**
 	 * Manhattan distance (steps along the sides of an orthogonal grid).
 	 * @param x1
 	 * @param y1
@@ -422,6 +438,20 @@ public class TrigUtil {
 	 */
 	public static double maxDistance(final double x1, final double y1, final double  z1, final double x2, final double y2, final double z2){
 		return Math.max(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)), Math.abs(z1 - z2));
+	}
+	
+	/**
+	 * Check if the x-z plane move is "any backwards"  regarding the yaw direction.
+	 * @param xDistance
+	 * @param zDistance
+	 * @param yaw
+	 * @return
+	 */
+	public static boolean isMovingBackwards(final double xDistance, final double zDistance, final float yaw) {
+		return xDistance < 0D && zDistance > 0D && yaw > 180F && yaw < 270F
+			|| xDistance < 0D && zDistance < 0D && yaw > 270F && yaw < 360F 
+			|| xDistance > 0D && zDistance < 0D && yaw > 0F && yaw < 90F 
+			|| xDistance > 0D && zDistance > 0D && yaw > 90F && yaw < 180F;
 	}
 
 }

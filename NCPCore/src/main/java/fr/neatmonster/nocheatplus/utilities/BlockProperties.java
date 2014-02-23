@@ -355,6 +355,8 @@ public class BlockProperties {
      */
     private static final Map<String, Long> nameFlagMap = new LinkedHashMap<String, Long>();
     
+    private static final Location useLoc = new Location(null, 0, 0, 0);
+    
     static{
     	// Use reflection to get a flag -> name mapping and vice versa.
     	for (Field field : BlockProperties.class.getDeclaredFields()){
@@ -445,10 +447,7 @@ public class BlockProperties {
 
     private static void initBlocks(final MCAccess mcAccess, final WorldConfigProvider<?> worldConfigProvider) {
 		Arrays.fill(blocks, null);
-		///////////////////////////
 		// Initalize block flags
-		///////////////////////////
-		
 		// Generic initialization.
 		for (int i = 0; i <maxBlocks; i++){
 			blockFlags[i] = 0;
@@ -599,10 +598,7 @@ public class BlockProperties {
 		}){
 			blockFlags[mat.getId()] |= F_GROUND_HEIGHT;
 		}
-		
-		////////////////////////////////
 		// Set block break properties.
-		////////////////////////////////
 		// Instantly breakable.
 		for (final Material mat : instantMat){
 			blocks[mat.getId()] = instantType;
@@ -886,7 +882,9 @@ public class BlockProperties {
 	 * @return
 	 */
 	public static long getBreakingDuration(final int blockId, final Player player){
-		return getBreakingDuration(blockId, player.getItemInHand(), player.getInventory().getHelmet(), player, player.getLocation());
+		final long res = getBreakingDuration(blockId, player.getItemInHand(), player.getInventory().getHelmet(), player, player.getLocation(useLoc));
+		useLoc.setWorld(null);
+		return res;
 	}
 	
 	/**

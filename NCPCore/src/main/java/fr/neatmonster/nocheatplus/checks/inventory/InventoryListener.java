@@ -32,24 +32,6 @@ import fr.neatmonster.nocheatplus.checks.combined.Improbable;
 import fr.neatmonster.nocheatplus.components.JoinLeaveListener;
 import fr.neatmonster.nocheatplus.utilities.InventoryUtil;
 
-/*
- * M""M                                       dP                              
- * M  M                                       88                              
- * M  M 88d888b. dP   .dP .d8888b. 88d888b. d8888P .d8888b. 88d888b. dP    dP 
- * M  M 88'  `88 88   d8' 88ooood8 88'  `88   88   88'  `88 88'  `88 88    88 
- * M  M 88    88 88 .88'  88.  ... 88    88   88   88.  .88 88       88.  .88 
- * M  M dP    dP 8888P'   `88888P' dP    dP   dP   `88888P' dP       `8888P88 
- * MMMM                                                                   .88 
- *                                                                    d8888P  
- *                                                                    
- * M""MMMMMMMM oo            dP                                       
- * M  MMMMMMMM               88                                       
- * M  MMMMMMMM dP .d8888b. d8888P .d8888b. 88d888b. .d8888b. 88d888b. 
- * M  MMMMMMMM 88 Y8ooooo.   88   88ooood8 88'  `88 88ooood8 88'  `88 
- * M  MMMMMMMM 88       88   88   88.  ... 88    88 88.  ... 88       
- * M         M dP `88888P'   dP   `88888P' dP    dP `88888P' dP       
- * MMMMMMMMMMM                                                        
- */
 /**
  * Central location to listen to events that are relevant for the inventory checks.
  * 
@@ -73,6 +55,9 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     
     private final Open open 			= addCheck(new Open());
     
+    /** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc = new Location(null, 0, 0, 0);
+    
     public InventoryListener(){
     	super(CheckType.INVENTORY);
     }
@@ -86,20 +71,12 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityShootBow(final EntityShootBowEvent event) {
-        /*
-         *  _____       _   _ _           ____  _                 _     ____                
-         * | ____|_ __ | |_(_) |_ _   _  / ___|| |__   ___   ___ | |_  | __ )  _____      __
-         * |  _| | '_ \| __| | __| | | | \___ \| '_ \ / _ \ / _ \| __| |  _ \ / _ \ \ /\ / /
-         * | |___| | | | |_| | |_| |_| |  ___) | | | | (_) | (_) | |_  | |_) | (_) \ V  V / 
-         * |_____|_| |_|\__|_|\__|\__, | |____/|_| |_|\___/ \___/ \__| |____/ \___/ \_/\_/  
-         *                        |___/                                                     
-         */
         // Only if a player shot the arrow.
         if (event.getEntity() instanceof Player) {
             final Player player = (Player) event.getEntity();
             if (instantBow.isEnabled(player)){
                 final long now = System.currentTimeMillis();
-                final Location loc = player.getLocation();
+                final Location loc = player.getLocation(useLoc);
                 if (Combined.checkYawRate(player, loc.getYaw(), now, loc.getWorld().getName())){
                     // No else if with this, could be cancelled due to other checks feeding, does not have actions.
                     event.setCancelled(true);
@@ -113,6 +90,7 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
                     // Combined fighting speed (Else if: Matter of taste, preventing extreme cascading and actions spam).
                     event.setCancelled(true);
             	}
+            	useLoc.setWorld(null);
             }  
         }
     }
@@ -127,14 +105,6 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onFoodLevelChange(final FoodLevelChangeEvent event) {
-        /*
-         *  _____               _   _                   _    ____ _                            
-         * |  ___|__   ___   __| | | |    _____   _____| |  / ___| |__   __ _ _ __   __ _  ___ 
-         * | |_ / _ \ / _ \ / _` | | |   / _ \ \ / / _ \ | | |   | '_ \ / _` | '_ \ / _` |/ _ \
-         * |  _| (_) | (_) | (_| | | |__|  __/\ V /  __/ | | |___| | | | (_| | | | | (_| |  __/
-         * |_|  \___/ \___/ \__,_| |_____\___| \_/ \___|_|  \____|_| |_|\__,_|_| |_|\__, |\___|
-         *                                                                          |___/      
-         */
         // Only if a player ate food.
         if (event.getEntity() instanceof Player) {
             final Player player = (Player) event.getEntity();
@@ -153,14 +123,6 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onInventoryClick(final InventoryClickEvent event) {
-        /*
-         *  ___                      _                      ____ _ _      _    
-         * |_ _|_ ____   _____ _ __ | |_ ___  _ __ _   _   / ___| (_) ___| | __
-         *  | || '_ \ \ / / _ \ '_ \| __/ _ \| '__| | | | | |   | | |/ __| |/ /
-         *  | || | | \ V /  __/ | | | || (_) | |  | |_| | | |___| | | (__|   < 
-         * |___|_| |_|\_/ \___|_| |_|\__\___/|_|   \__, |  \____|_|_|\___|_|\_\
-         *                                         |___/                       
-         */
         if (event.getWhoClicked() instanceof Player) {
         	final long now = System.currentTimeMillis();
         	final HumanEntity entity = event.getWhoClicked();
@@ -214,14 +176,6 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     protected void onPlayerDropItem(final PlayerDropItemEvent event) {
-        /*
-         *  ____  _                         ____                  
-         * |  _ \| | __ _ _   _  ___ _ __  |  _ \ _ __ ___  _ __  
-         * | |_) | |/ _` | | | |/ _ \ '__| | | | | '__/ _ \| '_ \ 
-         * |  __/| | (_| | |_| |  __/ |    | |_| | | | (_) | |_) |
-         * |_|   |_|\__,_|\__, |\___|_|    |____/|_|  \___/| .__/ 
-         *                |___/                            |_|    
-         */
         
         final Player player = event.getPlayer();
         
@@ -256,14 +210,6 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
      */
     @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     public final void onPlayerInteract(final PlayerInteractEvent event) {
-        /*
-         *  ____  _                         ___       _                      _   
-         * |  _ \| | __ _ _   _  ___ _ __  |_ _|_ __ | |_ ___ _ __ __ _  ___| |_ 
-         * | |_) | |/ _` | | | |/ _ \ '__|  | || '_ \| __/ _ \ '__/ _` |/ __| __|
-         * |  __/| | (_| | |_| |  __/ |     | || | | | ||  __/ | | (_| | (__| |_ 
-         * |_|   |_|\__,_|\__, |\___|_|    |___|_| |_|\__\___|_|  \__,_|\___|\__|
-         *                |___/                                                  
-         */
         // Only interested in right-clicks while holding an item.
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;

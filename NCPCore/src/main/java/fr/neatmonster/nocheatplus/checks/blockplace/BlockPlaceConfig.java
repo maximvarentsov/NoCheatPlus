@@ -15,24 +15,6 @@ import fr.neatmonster.nocheatplus.config.ConfigFile;
 import fr.neatmonster.nocheatplus.config.ConfigManager;
 import fr.neatmonster.nocheatplus.permissions.Permissions;
 
-/*
- * M#"""""""'M  dP                   dP       MM"""""""`YM dP                            
- * ##  mmmm. `M 88                   88       MM  mmmmm  M 88                            
- * #'        .M 88 .d8888b. .d8888b. 88  .dP  M'        .M 88 .d8888b. .d8888b. .d8888b. 
- * M#  MMMb.'YM 88 88'  `88 88'  `"" 88888"   MM  MMMMMMMM 88 88'  `88 88'  `"" 88ooood8 
- * M#  MMMM'  M 88 88.  .88 88.  ... 88  `8b. MM  MMMMMMMM 88 88.  .88 88.  ... 88.  ... 
- * M#       .;M dP `88888P' `88888P' dP   `YP MM  MMMMMMMM dP `88888P8 `88888P' `88888P' 
- * M#########M                                MMMMMMMMMMMM                               
- * 
- * MM'""""'YMM                   .8888b oo          
- * M' .mmm. `M                   88   "             
- * M  MMMMMooM .d8888b. 88d888b. 88aaa  dP .d8888b. 
- * M  MMMMMMMM 88'  `88 88'  `88 88     88 88'  `88 
- * M. `MMM' .M 88.  .88 88    88 88     88 88.  .88 
- * MM.     .dM `88888P' dP    dP dP     dP `8888P88 
- * MMMMMMMMMMM                                  .88 
- *                                          d8888P  
- */
 /**
  * Configurations specific for the block place checks. Every world gets one of these assigned to it, or if a world
  * doesn't get it's own, it will use the "global" version.
@@ -71,6 +53,9 @@ public class BlockPlaceConfig extends ACheckConfig {
         return worldsMap.get(player.getWorld().getName());
     }
     
+    public final boolean	againstCheck;
+    public final ActionList againstActions;
+    
     public final boolean    autoSignCheck;
     public final ActionList autoSignActions;
 
@@ -102,6 +87,9 @@ public class BlockPlaceConfig extends ACheckConfig {
     public BlockPlaceConfig(final ConfigFile data) {
         super(data, ConfPaths.BLOCKPLACE);
         
+        againstCheck = data.getBoolean(ConfPaths.BLOCKPLACE_AGAINST_CHECK);
+        againstActions = data.getOptimizedActionList(ConfPaths.BLOCKPLACE_AGAINST_ACTIONS, Permissions.BLOCKPLACE_AGAINST);
+
         autoSignCheck = data.getBoolean(ConfPaths.BLOCKPLACE_AUTOSIGN_CHECK);
         autoSignActions = data.getOptimizedActionList(ConfPaths.BLOCKPLACE_AUTOSIGN_ACTIONS, Permissions.BLOCKPLACE_AUTOSIGN);
 
@@ -143,7 +131,7 @@ public class BlockPlaceConfig extends ACheckConfig {
         case BLOCKPLACE_SPEED:
             return speedCheck;
         case BLOCKPLACE_AGAINST:
-        	return true;
+        	return againstCheck;
         case BLOCKPLACE_AUTOSIGN:
         	return autoSignCheck;
         default:

@@ -3,7 +3,6 @@ package fr.neatmonster.nocheatplus.checks.blockplace;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -24,27 +23,9 @@ import fr.neatmonster.nocheatplus.checks.combined.CombinedConfig;
 import fr.neatmonster.nocheatplus.checks.combined.Improbable;
 import fr.neatmonster.nocheatplus.checks.moving.MovingConfig;
 import fr.neatmonster.nocheatplus.compat.BridgeMisc;
-import fr.neatmonster.nocheatplus.hooks.NCPExemptionManager;
 import fr.neatmonster.nocheatplus.permissions.Permissions;
 import fr.neatmonster.nocheatplus.utilities.BlockProperties;
 
-/*
- * M#"""""""'M  dP                   dP       MM"""""""`YM dP                            
- * ##  mmmm. `M 88                   88       MM  mmmmm  M 88                            
- * #'        .M 88 .d8888b. .d8888b. 88  .dP  M'        .M 88 .d8888b. .d8888b. .d8888b. 
- * M#  MMMb.'YM 88 88'  `88 88'  `"" 88888"   MM  MMMMMMMM 88 88'  `88 88'  `"" 88ooood8 
- * M#  MMMM'  M 88 88.  .88 88.  ... 88  `8b. MM  MMMMMMMM 88 88.  .88 88.  ... 88.  ... 
- * M#       .;M dP `88888P' `88888P' dP   `YP MM  MMMMMMMM dP `88888P8 `88888P' `88888P' 
- * M#########M                                MMMMMMMMMMMM                               
- * 
- * M""MMMMMMMM oo            dP                                       
- * M  MMMMMMMM               88                                       
- * M  MMMMMMMM dP .d8888b. d8888P .d8888b. 88d888b. .d8888b. 88d888b. 
- * M  MMMMMMMM 88 Y8ooooo.   88   88ooood8 88'  `88 88ooood8 88'  `88 
- * M  MMMMMMMM 88       88   88   88.  ... 88    88 88.  ... 88       
- * M         M dP `88888P'   dP   `88888P' dP    dP `88888P' dP       
- * MMMMMMMMMMM                                                        
- */
 /**
  * Central location to listen to events that are relevant for the block place checks.
  * 
@@ -73,6 +54,9 @@ public class BlockPlaceListener extends CheckListener {
 		return hash;
 	}
 	
+	/** Against. */
+	private final Against against = addCheck(new Against());
+	
 	/** AutoSign. */
 	private final AutoSign autoSign = addCheck(new AutoSign());
 
@@ -91,6 +75,9 @@ public class BlockPlaceListener extends CheckListener {
     /** The speed check. */
     private final Speed     speed     = addCheck(new Speed());
     
+    /** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc = new Location(null, 0, 0, 0);
+    
     public BlockPlaceListener(){
     	super(CheckType.BLOCKPLACE);
     }
@@ -104,70 +91,65 @@ public class BlockPlaceListener extends CheckListener {
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onBlockPlace(final BlockPlaceEvent event) {
-        /*
-         *  ____  _            _      ____  _                
-         * | __ )| | ___   ___| | __ |  _ \| | __ _  ___ ___ 
-         * |  _ \| |/ _ \ / __| |/ / | |_) | |/ _` |/ __/ _ \
-         * | |_) | | (_) | (__|   <  |  __/| | (_| | (_|  __/
-         * |____/|_|\___/ \___|_|\_\ |_|   |_|\__,_|\___\___|
-         */
-
-        
+    	
         final Block block = event.getBlockPlaced();
         final Block blockAgainst = event.getBlockAgainst();
-        // We don't care about null blocks.
+        // Skip any null blocks.
         if (block == null || blockAgainst == null)
             return;
         
-        final Material mat = block.getType();
+        // TODO: Revise material use (not block.get... ?)
+        //final Material mat = block.getType();
         final Player player = event.getPlayer();
+        final Material placedMat = player.getItemInHand().getType(); // Safety first.
         boolean cancelled = false;
         
-        // Check if the block may be placed against a certain material.
-        // TODO: Maybe make it an extra check after all.
-        final int againstId = blockAgainst.getTypeId();
-        if (BlockProperties.isLiquid(againstId)){
-            if ((mat != Material.WATER_LILY || !BlockProperties.isLiquid(block.getRelative(BlockFace.DOWN).getTypeId())) 
-                    && !player.hasPermission(Permissions.BLOCKPLACE_AGAINST_LIQUIDS) && !NCPExemptionManager.isExempted(player, CheckType.BLOCKPLACE_AGAINST)) cancelled = true;
-        }
-        else if (againstId == Material.AIR.getId()){
-            if (!player.hasPermission(Permissions.BLOCKPLACE_AGAINST_AIR)  && !NCPExemptionManager.isExempted(player, CheckType.BLOCKPLACE_AGAINST)) cancelled = true;
-        }
-        
         final BlockPlaceData data = BlockPlaceData.getData(player);
+        final BlockPlaceConfig cc = BlockPlaceConfig.getConfig(player);
         
-        if (mat == Material.SIGN_POST || mat == Material.WALL_SIGN){
+        if (placedMat == Material.SIGN){
+        	// Might move to MONITOR priority.
         	data.autoSignPlacedTime = System.currentTimeMillis();
         	// Always hash as sign post for improved compatibility with Lockette etc.
-        	data.autoSignPlacedHash = getBlockPlaceHash(block, Material.SIGN_POST);
+        	data.autoSignPlacedHash = getBlockPlaceHash(block, Material.SIGN);
         }
-
-        // First, the fast place check.
+        
+        // Fast place check.
         if (fastPlace.isEnabled(player)){
-        	if (fastPlace.check(player, block))
-                cancelled = true;
-        	else{
+        	if (fastPlace.check(player, block, data, cc)) {
+        		cancelled = true;
+        	} else {
         		// Feed the improbable.
                 Improbable.feed(player, 0.5f, System.currentTimeMillis());
         	}
         }
 
-        // Second, the no swing check (player doesn't swing their arm when placing a lily pad).
-        if (!cancelled && mat != Material.WATER_LILY && noSwing.isEnabled(player)
-                && noSwing.check(player, data))
-            cancelled = true;
+        // No swing check (player doesn't swing their arm when placing a lily pad).
+        if (!cancelled && placedMat != Material.WATER_LILY && noSwing.isEnabled(player) && noSwing.check(player, data, cc)) {
+        	// Consider skipping all insta placables or using simplified version (true or true within time frame).
+        	cancelled = true;
+        }
 
-        // Third, the reach check.
-        if (!cancelled && reach.isEnabled(player) && reach.check(player, block, data))
-            cancelled = true;
+        // Reach check (distance).
+        if (!cancelled && reach.isEnabled(player) && reach.check(player, block, data, cc)) {
+        	cancelled = true;
+        }
+        useLoc.setWorld(null);
 
-        // Fourth, the direction check.
-        if (!cancelled && direction.isEnabled(player) && direction.check(player, block, blockAgainst, data))
-            cancelled = true;
+        // Direction check.
+        if (!cancelled && direction.isEnabled(player) && direction.check(player, block, blockAgainst, data, cc)) {
+        	cancelled = true;
+        }
+        
+        // Surrounding material.
+        if (!cancelled && against.isEnabled(player) && against.check(player, block, placedMat, blockAgainst, data, cc)) {
+        	cancelled = true;
+        }
 
         // If one of the checks requested to cancel the event, do so.
-        if (cancelled)
-            event.setCancelled(cancelled);
+        if (cancelled) {
+        	event.setCancelled(cancelled);
+        }
     }
     
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -199,14 +181,6 @@ public class BlockPlaceListener extends CheckListener {
     @EventHandler(
             priority = EventPriority.MONITOR)
     public void onPlayerAnimation(final PlayerAnimationEvent event) {
-        /*
-         *  ____  _                            _          _                 _   _             
-         * |  _ \| | __ _ _   _  ___ _ __     / \   _ __ (_)_ __ ___   __ _| |_(_) ___  _ __  
-         * | |_) | |/ _` | | | |/ _ \ '__|   / _ \ | '_ \| | '_ ` _ \ / _` | __| |/ _ \| '_ \ 
-         * |  __/| | (_| | |_| |  __/ |     / ___ \| | | | | | | | | | (_| | |_| | (_) | | | |
-         * |_|   |_|\__,_|\__, |\___|_|    /_/   \_\_| |_|_|_| |_| |_|\__,_|\__|_|\___/|_| |_|
-         *                |___/                                                               
-         */
         // Just set a flag to true when the arm was swung.
         BlockPlaceData.getData(event.getPlayer()).noSwingArmSwung = true;
     }
@@ -220,14 +194,6 @@ public class BlockPlaceListener extends CheckListener {
     @EventHandler(
             ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onPlayerInteract(final PlayerInteractEvent event) {
-        /*
-         *  ____  _                         ___       _                      _   
-         * |  _ \| | __ _ _   _  ___ _ __  |_ _|_ __ | |_ ___ _ __ __ _  ___| |_ 
-         * | |_) | |/ _` | | | |/ _ \ '__|  | || '_ \| __/ _ \ '__/ _` |/ __| __|
-         * |  __/| | (_| | |_| |  __/ |     | || | | | ||  __/ | | (_| | (__| |_ 
-         * |_|   |_|\__,_|\__, |\___|_|    |___|_| |_|\__\___|_|  \__,_|\___|\__|
-         *                |___/                                                  
-         */
     	if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
     	final Player player = event.getPlayer();
     	
@@ -247,6 +213,7 @@ public class BlockPlaceListener extends CheckListener {
         	final org.bukkit.block.Block relBlock = block.getRelative(event.getBlockFace());
         	final Material relMat = relBlock.getType();
         	
+        	// TODO: Placing inside of water, but not "against" ?
         	if (relMat == Material.WATER || relMat == Material.STATIONARY_WATER) return;
         	
         	if (!player.hasPermission(Permissions.BLOCKPLACE_BOATSANYWHERE)){
@@ -301,7 +268,7 @@ public class BlockPlaceListener extends CheckListener {
         boolean cancel = false;
         if (speed.isEnabled(player)){
             final long now = System.currentTimeMillis();
-            final Location loc = player.getLocation();
+            final Location loc = player.getLocation(useLoc);
             if (Combined.checkYawRate(player, loc.getYaw(), now, loc.getWorld().getName())){
             	// Yawrate (checked extra).
             	cancel = true;
@@ -322,19 +289,20 @@ public class BlockPlaceListener extends CheckListener {
         		// Do nothing !
         		// TODO: Might have further flags?
         	}
-        	else if (!BlockProperties.isPassable(projectile.getLocation())){
+        	else if (!BlockProperties.isPassable(projectile.getLocation(useLoc))){
         		// Launch into a block.
         		// TODO: This might be a general check later.       		
         		cancel = true;
         	}
         	else{
-            	if (!BlockProperties.isPassable(player.getEyeLocation(), projectile.getLocation())){
+            	if (!BlockProperties.isPassable(player.getEyeLocation(), projectile.getLocation(useLoc))){
+            		// (Spare a useLoc2, for this is seldom rather.)
             		// Something between player 
             		// TODO: This might be a general check later.
             		cancel = true;
             	}
             	else{
-            		final Material mat = player.getLocation().getBlock().getType();
+            		final Material mat = player.getLocation(useLoc).getBlock().getType();
             		final long flags = BlockProperties.F_CLIMBABLE | BlockProperties.F_LIQUID | BlockProperties.F_IGN_PASSABLE;
             		if (mat != Material.AIR && (BlockProperties.getBlockFlags(mat.getId()) & flags) == 0 && !mcAccess.hasGravity(mat)){
             			// Still fails on piston traps etc.
@@ -350,5 +318,7 @@ public class BlockPlaceListener extends CheckListener {
         if (cancel){
         	event.setCancelled(true);
         }
+        // Cleanup.
+        useLoc.setWorld(null);
     }
 }

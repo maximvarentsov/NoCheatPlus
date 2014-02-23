@@ -19,15 +19,6 @@ import fr.neatmonster.nocheatplus.utilities.BlockProperties;
 import fr.neatmonster.nocheatplus.utilities.StringUtil;
 import fr.neatmonster.nocheatplus.utilities.TickTask;
 
-/*
- * MM'""""'YMM          oo   dP   oo                   dP 
- * M' .mmm. `M               88                        88 
- * M  MMMMMooM 88d888b. dP d8888P dP .d8888b. .d8888b. 88 
- * M  MMMMMMMM 88'  `88 88   88   88 88'  `"" 88'  `88 88 
- * M. `MMM' .M 88       88   88   88 88.  ... 88.  .88 88 
- * MM.     .dM dP       dP   dP   dP `88888P' `88888P8 dP 
- * MMMMMMMMMMM                                            
- */
 /**
  * A check used to verify that critical hits done by players are legit.
  */
@@ -47,14 +38,11 @@ public class Critical extends Check {
      *            the player
      * @return true, if successful
      */
-    public boolean check(final Player player) {
+    public boolean check(final Player player, final Location loc) {
         final FightConfig cc = FightConfig.getConfig(player);
         final FightData data = FightData.getData(player);
 
         boolean cancel = false;
-
-        // We'll need the PlayerLocation to know some important stuff.
-        final Location loc = player.getLocation();
 		
 		final float mcFallDistance = player.getFallDistance();
 		final MovingConfig mCc = MovingConfig.getConfig(player);
@@ -79,6 +67,7 @@ public class Critical extends Check {
         		final MovingConfig ccM = MovingConfig.getConfig(player);
             	if (MovingListener.shouldCheckSurvivalFly(player, dataM, ccM)){
                     final double deltaFallDistance = (cc.criticalFallDistance - player.getFallDistance()) / cc.criticalFallDistance;
+                    // TODO: Cleanup: velocity is more like the gravity constant.
                     final double deltaVelocity = (cc.criticalVelocity - Math.abs(player.getVelocity().getY())) / cc.criticalVelocity;
                     double delta = deltaFallDistance > 0D ? deltaFallDistance : 0D + deltaVelocity > 0D ? deltaVelocity : 0D;
                     

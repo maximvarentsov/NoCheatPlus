@@ -6,16 +6,6 @@ import java.util.LinkedList;
 
 import org.bukkit.Material;
 
-/*
- * M""""""'YMM          .8888b                   dP   dP   MM'""""'YMM                   .8888b oo          
- * M  mmmm. `M          88   "                   88   88   M' .mmm. `M                   88   "             
- * M  MMMMM  M .d8888b. 88aaa  .d8888b. dP    dP 88 d8888P M  MMMMMooM .d8888b. 88d888b. 88aaa  dP .d8888b. 
- * M  MMMMM  M 88ooood8 88     88'  `88 88    88 88   88   M  MMMMMMMM 88'  `88 88'  `88 88     88 88'  `88 
- * M  MMMM' .M 88.  ... 88     88.  .88 88.  .88 88   88   M. `MMM' .M 88.  .88 88    88 88     88 88.  .88 
- * M       .MM `88888P' dP     `88888P8 `88888P' dP   dP   MM.     .dM `88888P' dP    dP dP     dP `8888P88 
- * MMMMMMMMMMM                                             MMMMMMMMMMM                                  .88 
- *                                                                                                  d8888P  
- */
 /**
  * These are the default settings for NoCheatPlus. They will be used in addition to/in replacement of configurations
  * given in the configFactory.yml file.
@@ -26,7 +16,7 @@ public class DefaultConfig extends ConfigFile {
 	 * NCP build needed for this config.
 	 * (Should only increment with changing or removing paths.) 
 	 */
-	public static final int buildNumber = 661;
+	public static final int buildNumber = 667;
 	
 	// TODO: auto input full version or null to an extra variable or several [fail safe for other syntax checking]?
 
@@ -44,16 +34,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.CONFIGVERSION_NOTIFY, true);
 //        not set(ConfPaths.CONFIGVERSION_CREATED, -1);
 //        not set(ConfPaths.CONFIGVERSION_SAVED, -1);
-
-        /*
-         * 888                                 ,e,                  
-         * 888      e88 88e   e88 888  e88 888  "  888 8e   e88 888 
-         * 888     d888 888b d888 888 d888 888 888 888 88b d888 888 
-         * 888  ,d Y888 888P Y888 888 Y888 888 888 888 888 Y888 888 
-         * 888,d88  "88 88"   "88 888  "88 888 888 888 888  "88 888 
-         *                     ,  88P   ,  88P               ,  88P 
-         *                    "8",P"   "8",P"               "8",P"  
-         */
         set(ConfPaths.LOGGING_ACTIVE, true);
         set(ConfPaths.LOGGING_DEBUG, false);
         set(ConfPaths.LOGGING_BACKEND_CONSOLE_ACTIVE, true);
@@ -65,13 +45,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.LOGGING_BACKEND_INGAMECHAT_PREFIX, "&cNCP: &f");
         set(ConfPaths.LOGGING_BACKEND_INGAMECHAT_SUBSCRIPTIONS, false);
 
-        /*
-         *     e   e     ,e,                        888 888                                                   
-         *    d8b d8b     "   dP"Y  e88'888  ,e e,  888 888  ,"Y88b 888 8e   ,e e,   e88 88e  8888 8888  dP"Y 
-         *   e Y8b Y8b   888 C88b  d888  '8 d88 88b 888 888 "8" 888 888 88b d88 88b d888 888b 8888 8888 C88b  
-         *  d8b Y8b Y8b  888  Y88D Y888   , 888   , 888 888 ,ee 888 888 888 888   , Y888 888P Y888 888P  Y88D 
-         * d888b Y8b Y8b 888 d,dP   "88,e8'  "YeeP" 888 888 "88 888 888 888  "YeeP"  "88 88"   "88 88"  d,dP  
-         */
 //        set(ConfPaths.MISCELLANEOUS_CHECKFORUPDATES, true);
 //        set(ConfPaths.MISCELLANEOUS_REPORTTOMETRICS, true);
 
@@ -103,13 +76,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.PROTECT_CLIENTS_MOTD_ACTIVE, true);
         set(ConfPaths.PROTECT_CLIENTS_MOTD_ALLOWALL, false);
         
-        /*
-         * 888 88b, 888                    888    888 88b,                        888    
-         * 888 88P' 888  e88 88e   e88'888 888 ee 888 88P' 888,8,  ,e e,   ,"Y88b 888 ee 
-         * 888 8K   888 d888 888b d888  '8 888 P  888 8K   888 "  d88 88b "8" 888 888 P  
-         * 888 88b, 888 Y888 888P Y888   , 888 b  888 88b, 888    888   , ,ee 888 888 b  
-         * 888 88P' 888  "88 88"   "88,e8' 888 8b 888 88P' 888     "YeeP" "88 888 888 8b 
-         */
         set(ConfPaths.BLOCKBREAK_DIRECTION_CHECK, true);
         set(ConfPaths.BLOCKBREAK_DIRECTION_ACTIONS, "cancel vl>10 log:bdirection:0:5:if cancel");
 
@@ -137,13 +103,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.BLOCKBREAK_WRONGBLOCK_LEVEL, 10);
         set(ConfPaths.BLOCKBREAK_WRONGBLOCK_ACTIONS, "cancel vl>10 log:bwrong:0:5:if cancel vl>30 log:bwrong:0:5:cif cancel cmd:kickwb");
         
-        /*
-         * 888 88b, 888                    888    888           d8                                     d8   
-         * 888 88P' 888  e88 88e   e88'888 888 ee 888 888 8e   d88    ,e e,  888,8,  ,"Y88b  e88'888  d88   
-         * 888 8K   888 d888 888b d888  '8 888 P  888 888 88b d88888 d88 88b 888 "  "8" 888 d888  '8 d88888 
-         * 888 88b, 888 Y888 888P Y888   , 888 b  888 888 888  888   888   , 888    ,ee 888 Y888   ,  888   
-         * 888 88P' 888  "88 88"   "88,e8' 888 8b 888 888 888  888    "YeeP" 888    "88 888  "88,e8'  888   
-         */
         set(ConfPaths.BLOCKINTERACT_DIRECTION_CHECK, true);
         set(ConfPaths.BLOCKINTERACT_DIRECTION_ACTIONS, "cancel vl>10 log:bdirection:0:3:if cancel");
 
@@ -156,15 +115,11 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.BLOCKINTERACT_SPEED_ACTIONS, "cancel vl>200 log:bspeed:0:2:if cancel vl>1000 cancel log:bspeed:0:2:icf cmd:kickbspeed");
         
         set(ConfPaths.BLOCKINTERACT_VISIBLE_CHECK, true);
-        set(ConfPaths.BLOCKINTERACT_VISIBLE_ACTIONS, "cancel vl>5 log:bvisible:0:2:if cancel");
+        set(ConfPaths.BLOCKINTERACT_VISIBLE_ACTIONS, "cancel vl>100 log:bvisible:0:10:if cancel");
         
-        /*
-         * 888 88b, 888                    888    888 88e  888                          
-         * 888 88P' 888  e88 88e   e88'888 888 ee 888 888D 888  ,"Y88b  e88'888  ,e e,  
-         * 888 8K   888 d888 888b d888  '8 888 P  888 88"  888 "8" 888 d888  '8 d88 88b 
-         * 888 88b, 888 Y888 888P Y888   , 888 b  888      888 ,ee 888 Y888   , 888   , 
-         * 888 88P' 888  "88 88"   "88,e8' 888 8b 888      888 "88 888  "88,e8'  "YeeP" 
-         */
+        // BLOCKPLACE
+        set(ConfPaths.BLOCKPLACE_AGAINST_CHECK, true);
+        set(ConfPaths.BLOCKPLACE_AGAINST_ACTIONS, "cancel");
         
         set(ConfPaths.BLOCKPLACE_AUTOSIGN_CHECK, true);
         set(ConfPaths.BLOCKPLACE_AUTOSIGN_ACTIONS, "cancel vl>10 log:bautosign:0:3:if cancel");
@@ -188,14 +143,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.BLOCKPLACE_SPEED_INTERVAL, 45L);
         set(ConfPaths.BLOCKPLACE_SPEED_ACTIONS,
                 "cancel vl>150 log:bpspeed:3:5:if cancel vl>1000 log:bpspeed:3:5:cif cancel");
-
-        /*
-         *   e88'Y88 888               d8   
-         *  d888  'Y 888 ee   ,"Y88b  d88   
-         * C8888     888 88b "8" 888 d88888 
-         *  Y888  ,d 888 888 ,ee 888  888   
-         *   "88,d88 888 888 "88 888  888   
-         */
         
         set(ConfPaths.CHAT_COLOR_CHECK, true);
         set(ConfPaths.CHAT_COLOR_ACTIONS, "log:color:0:1:if cancel");
@@ -318,7 +265,7 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.FIGHT_ANGLE_ACTIONS, "cancel vl>100 log:angle:3:5:f cancel vl>250 log:angle:0:5:cif cancel");
 
         set(ConfPaths.FIGHT_CRITICAL_CHECK, true);
-        set(ConfPaths.FIGHT_CRITICAL_FALLDISTANCE, 0.01D);
+        set(ConfPaths.FIGHT_CRITICAL_FALLDISTANCE, 0.06251D);
         set(ConfPaths.FIGHT_CRITICAL_VELOCITY, 0.1D);
         set(ConfPaths.FIGHT_CRITICAL_ACTIONS, "cancel vl>50 log:critical:0:5:cif cancel");
 
@@ -362,15 +309,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.FIGHT_SPEED_SHORTTERM_TICKS, 7);
         set(ConfPaths.FIGHT_SPEED_SHORTTERM_LIMIT, 6);
 
-        /*
-         * 888                                     d8                              
-         * 888 888 8e  Y8b Y888P  ,e e,  888 8e   d88    e88 88e  888,8, Y8b Y888P 
-         * 888 888 88b  Y8b Y8P  d88 88b 888 88b d88888 d888 888b 888 "   Y8b Y8P  
-         * 888 888 888   Y8b "   888   , 888 888  888   Y888 888P 888      Y8b Y   
-         * 888 888 888    Y8P     "YeeP" 888 888  888    "88 88"  888       888    
-         *                                                                  888    
-         *                                                                  888    
-         */
         set(ConfPaths.INVENTORY_DROP_CHECK, true);
         set(ConfPaths.INVENTORY_DROP_LIMIT, 100);
         set(ConfPaths.INVENTORY_DROP_TIMEFRAME, 20L);
@@ -445,7 +383,7 @@ public class DefaultConfig extends ConfigFile {
         // set(ConfPaths.MOVING_SURVIVALFLY_SPRINTINGSPEED, 100);
         // set(ConfPaths.MOVING_SURVIVALFLY_SWIMMINGSPEED, 100);
         // set(ConfPaths.MOVING_SURVIVALFLY_WALKINGSPEED, 100);
-        set(ConfPaths.MOVING_SURVIVALFLY_ACTIONS, "log:flyshort:3:10:f cancel vl>100 log:flyshort:0:10:if cancel vl>400 log:flylong:0:5:cif cancel vl>1000 log:flylong:0:5:cif cancel cmd:kickfly");
+        set(ConfPaths.MOVING_SURVIVALFLY_ACTIONS, "log:flyshort:3:10:f cancel vl>100 log:flyshort:0:10:if cancel vl>400 log:flylong:0:5:cif cancel vl>1500 log:flylong:0:5:cif cancel cmd:kickfly");
 
         // sf / hover check.
         set(ConfPaths.MOVING_SURVIVALFLY_HOVER_CHECK, true);
@@ -472,15 +410,6 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.MOVING_ASSUMESPRINT, false);
         set(ConfPaths.MOVING_SPEEDGRACE, 4.0);
         
-        /*
-         *  dP"8   d8          ,e,                        
-         * C8b Y  d88   888,8,  "  888 8e   e88 888  dP"Y 
-         *  Y8b  d88888 888 "  888 888 88b d888 888 C88b  
-         * b Y8D  888   888    888 888 888 Y888 888  Y88D 
-         * 8edP   888   888    888 888 888  "88 888 d,dP  
-         *                                   ,  88P       
-         *                                  "8",P"        
-         */
         // TODO: An extra file might suit these.
         final String start = "[player] failed [check]: ";
         final String end = ". VL [violations].";

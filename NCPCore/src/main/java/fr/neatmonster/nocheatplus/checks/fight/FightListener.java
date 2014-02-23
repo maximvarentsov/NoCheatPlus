@@ -36,16 +36,6 @@ import fr.neatmonster.nocheatplus.utilities.TickTask;
 import fr.neatmonster.nocheatplus.utilities.TrigUtil;
 import fr.neatmonster.nocheatplus.utilities.build.BuildParameters;
 
-/*
- * MM""""""""`M oo          dP         dP   M""MMMMMMMM oo            dP                                       
- * MM  mmmmmmmM             88         88   M  MMMMMMMM               88                                       
- * M'      MMMM dP .d8888b. 88d888b. d8888P M  MMMMMMMM dP .d8888b. d8888P .d8888b. 88d888b. .d8888b. 88d888b. 
- * MM  MMMMMMMM 88 88'  `88 88'  `88   88   M  MMMMMMMM 88 Y8ooooo.   88   88ooood8 88'  `88 88ooood8 88'  `88 
- * MM  MMMMMMMM 88 88.  .88 88    88   88   M  MMMMMMMM 88       88   88   88.  ... 88    88 88.  ... 88       
- * MM  MMMMMMMM dP `8888P88 dP    dP   dP   M         M dP `88888P'   dP   `88888P' dP    dP `88888P' dP       
- * MMMMMMMMMMMM         .88                 MMMMMMMMMMM                                                        
- *                  d8888P                                                                                     
- */
 /**
  * Central location to listen to events that are relevant for the fight checks.<br>
  * This listener is registered after the CombinedListener.
@@ -84,6 +74,12 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
     /** The speed check. */
     private final Speed       speed       = addCheck(new Speed());
     
+    /** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc1 = new Location(null, 0, 0, 0);
+	
+	/** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc2 = new Location(null, 0, 0, 0);
+    
     public FightListener(){
     	super(CheckType.FIGHT);
     }
@@ -110,8 +106,8 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         final long now = System.currentTimeMillis();
         final boolean worldChanged = !worldName.equals(data.lastWorld);
         
-        final Location loc =  player.getLocation();
-        final Location targetLoc = damaged.getLocation();
+        final Location loc =  player.getLocation(useLoc1);
+        final Location damagedLoc = damaged.getLocation(useLoc2);
 //        final double targetDist = CheckUtils.distance(loc, targetLoc); // TODO: Calculate distance as is done in fight.reach !
         final double targetMove;
         final int tickAge;
@@ -128,7 +124,7 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         else{
         	tickAge = tick - data.lastAttackTick;
         	// TODO: Maybe use 3d distance if dy(normalized) is too big. 
-        	targetMove = TrigUtil.distance(data.lastAttackedX, data.lastAttackedZ, targetLoc.getX(), targetLoc.getZ());
+        	targetMove = TrigUtil.distance(data.lastAttackedX, data.lastAttackedZ, damagedLoc.getX(), damagedLoc.getZ());
         	msAge = (long) (50f * TickTask.getLag(50L * tickAge) * (float) tickAge);
         	normalizedMove = msAge == 0 ? targetMove : targetMove * Math.min(20.0, 1000.0 / (double) msAge);
         }
@@ -198,39 +194,45 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
 			if (angle.check(player, worldChanged)) cancelled = true;
 		}
 
-        if (!cancelled && critical.isEnabled(player) && critical.check(player))
-            cancelled = true;
+        if (!cancelled && critical.isEnabled(player) && critical.check(player, loc)) {
+        	cancelled = true;
+        }
         
-        if (!cancelled && knockback.isEnabled(player) && knockback.check(player))
-            cancelled = true;
+        if (!cancelled && knockback.isEnabled(player) && knockback.check(player)) {
+        	cancelled = true;
+        }
         
-        if (!cancelled && noSwing.isEnabled(player) && noSwing.check(player))
-            cancelled = true;
+        if (!cancelled && noSwing.isEnabled(player) && noSwing.check(player)) {
+        	cancelled = true;
+        }
         
-        if (!cancelled && player.isBlocking() && !player.hasPermission(Permissions.MOVING_SURVIVALFLY_BLOCKING))
-            cancelled = true;
+        if (!cancelled && player.isBlocking() && !player.hasPermission(Permissions.MOVING_SURVIVALFLY_BLOCKING)) {
+        	cancelled = true;
+        }
         
         // TODO: Order of the last two [might put first] ?
         
-        if (!cancelled && reach.isEnabled(player) && reach.check(player, damaged))
+        if (!cancelled && reach.isEnabled(player) && reach.check(player, loc, damaged, damagedLoc)) {
         	cancelled = true;
+        }
         
-        if (!cancelled && direction.isEnabled(player) && direction.check(player, damaged))
-            cancelled = true;
+        if (!cancelled && direction.isEnabled(player) && direction.check(player, loc, damaged, damagedLoc)) {
+        	cancelled = true;
+        }
         
         // Set values.
         data.lastWorld = worldName;
     	data.lastAttackTick = tick;
-    	data.lastAttackedX = targetLoc.getX();
-    	data.lastAttackedY = targetLoc.getY();
-    	data.lastAttackedZ = targetLoc.getZ();
+    	data.lastAttackedX = damagedLoc.getX();
+    	data.lastAttackedY = damagedLoc.getY();
+    	data.lastAttackedZ = damagedLoc.getZ();
 //    	data.lastAttackedDist = targetDist;
     	
     	// Care for the "lost sprint problem": sprint resets, client moves as if still...
     	// TODO: Use stored distance calculation same as reach check?
     	// TODO: For pvp: make use of "player was there" heuristic later on.
     	// TODO: Confine further with simple pre-conditions.
-    	if (!cancelled && TrigUtil.distance(loc.getX(), loc.getZ(), targetLoc.getX(), targetLoc.getZ()) < 4.5){
+    	if (!cancelled && TrigUtil.distance(loc.getX(), loc.getZ(), damagedLoc.getX(), damagedLoc.getZ()) < 4.5){
     		final MovingData mData = MovingData.getData(player);
 			// Check if fly checks is an issue at all, re-check "real sprinting".
     		if (mData.fromX != Double.MAX_VALUE && mData.mediumLiftOff != MediumLiftOff.LIMIT_JUMP){
@@ -243,7 +245,7 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
     					// TODO: What would mData.lostSprintCount > 0  mean here?
         				mData.lostSprintCount = 7;
         				if ((cc.debug || mc.debug) && BuildParameters.debugLevel > 0){
-        					System.out.println(player.getName() + " (lostsprint) hDist to last from: " + hDist + " | targetdist=" + TrigUtil.distance(loc.getX(), loc.getZ(), targetLoc.getX(), targetLoc.getZ()) + " | sprinting=" + player.isSprinting() + " | food=" + player.getFoodLevel() +" | hbuf=" + mData.sfHorizontalBuffer);
+        					System.out.println(player.getName() + " (lostsprint) hDist to last from: " + hDist + " | targetdist=" + TrigUtil.distance(loc.getX(), loc.getZ(), damagedLoc.getX(), damagedLoc.getZ()) + " | sprinting=" + player.isSprinting() + " | food=" + player.getFoodLevel() +" | hbuf=" + mData.sfHorizontalBuffer);
         				}
     				}
     			}
@@ -258,7 +260,11 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         		System.out.println(player.getName() + " ~ attack penalty.");
         	}
         }
-    	
+        
+    	// Cleanup.
+        useLoc1.setWorld(null);
+        useLoc2.setWorld(null);
+        
         return cancelled;
     }
     
@@ -287,14 +293,6 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
      */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityDamage(final EntityDamageEvent event) {
-        /*
-         *  _____       _   _ _           ____                                   
-         * | ____|_ __ | |_(_) |_ _   _  |  _ \  __ _ _ __ ___   __ _  __ _  ___ 
-         * |  _| | '_ \| __| | __| | | | | | | |/ _` | '_ ` _ \ / _` |/ _` |/ _ \
-         * | |___| | | | |_| | |_| |_| | | |_| | (_| | | | | | | (_| | (_| |  __/
-         * |_____|_| |_|\__|_|\__|\__, | |____/ \__,_|_| |_| |_|\__,_|\__, |\___|
-         *                        |___/                               |___/      
-         */
     	
     	final Entity damaged = event.getEntity();
     	final Player damagedPlayer = damaged instanceof Player ? (Player) damaged : null;
@@ -388,14 +386,6 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
      */
     @EventHandler(priority = EventPriority.MONITOR)
     protected void onEntityDeathEvent(final EntityDeathEvent event) {
-        /*
-         *  _____       _   _ _           ____             _   _     
-         * | ____|_ __ | |_(_) |_ _   _  |  _ \  ___  __ _| |_| |__  
-         * |  _| | '_ \| __| | __| | | | | | | |/ _ \/ _` | __| '_ \ 
-         * | |___| | | | |_| | |_| |_| | | |_| |  __/ (_| | |_| | | |
-         * |_____|_| |_|\__|_|\__|\__, | |____/ \___|\__,_|\__|_| |_|
-         *                        |___/                              
-         */
         // Only interested in dying players.
         final Entity entity = event.getEntity();
         if (entity instanceof Player){
@@ -412,14 +402,6 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
      */
     @EventHandler(priority = EventPriority.MONITOR)
     protected void onPlayerAnimation(final PlayerAnimationEvent event) {
-        /*
-         *  ____  _                            _          _                 _   _             
-         * |  _ \| | __ _ _   _  ___ _ __     / \   _ __ (_)_ __ ___   __ _| |_(_) ___  _ __  
-         * | |_) | |/ _` | | | |/ _ \ '__|   / _ \ | '_ \| | '_ ` _ \ / _` | __| |/ _ \| '_ \ 
-         * |  __/| | (_| | |_| |  __/ |     / ___ \| | | | | | | | | | (_| | |_| | (_) | | | |
-         * |_|   |_|\__,_|\__, |\___|_|    /_/   \_\_| |_|_|_| |_| |_|\__,_|\__|_|\___/|_| |_|
-         *                |___/                                                               
-         */
         // Set a flag telling us that the arm has been swung.
         FightData.getData(event.getPlayer()).noSwingArmSwung = true;
     }

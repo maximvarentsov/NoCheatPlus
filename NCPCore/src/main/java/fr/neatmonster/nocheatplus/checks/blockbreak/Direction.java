@@ -9,19 +9,13 @@ import fr.neatmonster.nocheatplus.checks.Check;
 import fr.neatmonster.nocheatplus.checks.CheckType;
 import fr.neatmonster.nocheatplus.utilities.TrigUtil;
 
-/*
- * M""""""'YMM oo                              dP   oo                   
- * M  mmmm. `M                                 88                        
- * M  MMMMM  M dP 88d888b. .d8888b. .d8888b. d8888P dP .d8888b. 88d888b. 
- * M  MMMMM  M 88 88'  `88 88ooood8 88'  `""   88   88 88'  `88 88'  `88 
- * M  MMMM' .M 88 88       88.  ... 88.  ...   88   88 88.  .88 88    88 
- * M       .MM dP dP       `88888P' `88888P'   dP   dP `88888P' dP    dP 
- * MMMMMMMMMMM                                                           
- */
 /**
  * The Direction check will find out if a player tried to interact with something that's not in their field of view.
  */
 public class Direction extends Check {
+	
+	/** For temporary use: LocUtil.clone before passing deeply, call setWorld(null) after use. */
+	private final Location useLoc = new Location(null, 0, 0, 0);
 
     /**
      * Instantiates a new direction check.
@@ -45,7 +39,7 @@ public class Direction extends Check {
 
         // How far "off" is the player with their aim. We calculate from the players eye location and view direction to
         // the center of the target block. If the line of sight is more too far off, "off" will be bigger than 0.
-        final Location loc = player.getLocation();
+        final Location loc = player.getLocation(useLoc);
         final Vector direction = loc.getDirection();
         final double off = TrigUtil.directionCheck(loc, player.getEyeHeight(), direction, block, TrigUtil.DIRECTION_PRECISION);
 
@@ -61,10 +55,11 @@ public class Direction extends Check {
             // cancel the event.
             cancel = executeActions(player, data.directionVL, distance,
                     BlockBreakConfig.getConfig(player).directionActions);
-        } else
+        } else {
             // Player did likely nothing wrong, reduce violation counter to reward them.
             data.directionVL *= 0.9D;
-
+        }
+        useLoc.setWorld(null);
         return cancel;
     }
 }

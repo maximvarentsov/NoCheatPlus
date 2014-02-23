@@ -16,16 +16,6 @@ import fr.neatmonster.nocheatplus.checks.access.ICheckData;
 import fr.neatmonster.nocheatplus.utilities.ActionAccumulator;
 import fr.neatmonster.nocheatplus.utilities.PlayerLocation;
 
-/*
- * M"""""`'"""`YM                   oo                   M""""""'YMM            dP            
- * M  mm.  mm.  M                                        M  mmmm. `M            88            
- * M  MMM  MMM  M .d8888b. dP   .dP dP 88d888b. .d8888b. M  MMMMM  M .d8888b. d8888P .d8888b. 
- * M  MMM  MMM  M 88'  `88 88   d8' 88 88'  `88 88'  `88 M  MMMMM  M 88'  `88   88   88'  `88 
- * M  MMM  MMM  M 88.  .88 88 .88'  88 88    88 88.  .88 M  MMMM' .M 88.  .88   88   88.  .88 
- * M  MMM  MMM  M `88888P' 8888P'   dP dP    dP `8888P88 M       .MM `88888P8   dP   `88888P8 
- * MMMMMMMMMMMMMM                                    .88 MMMMMMMMMMM                          
- *                                               d8888P                                       
- */
 /**
  * Player specific data for the moving checks.
  */
@@ -279,8 +269,12 @@ public class MovingData extends ACheckData {
      * @param loc
      */
     public void resetPositions(final Location loc) {
-        if (loc == null) resetPositions(Double.MAX_VALUE, 0, 0);
-        else resetPositions(loc.getX(), loc.getY(), loc.getZ());
+        if (loc == null) {
+        	resetPositions(Double.MAX_VALUE, 0, 0);
+        }
+        else {
+        	resetPositions(loc.getX(), loc.getY(), loc.getZ());
+        }
     }
     
     /**
@@ -288,8 +282,12 @@ public class MovingData extends ACheckData {
      * @param loc
      */
 	public void resetPositions(PlayerLocation loc) {
-		if (loc == null) resetPositions(Double.MAX_VALUE, 0, 0);
-        else resetPositions(loc.getX(), loc.getY(), loc.getZ());
+		if (loc == null) {
+			resetPositions(Double.MAX_VALUE, 0, 0);
+		}
+        else {
+        	resetPositions(loc.getX(), loc.getY(), loc.getZ());
+        }
 	}
 
     /**
@@ -385,8 +383,12 @@ public class MovingData extends ACheckData {
 	}
 
 	public boolean hasSetBackWorldChanged(final Location loc) {
-		if (setBack == null) return true;
-		else return setBack.getWorld().equals(loc.getWorld());
+		if (setBack == null) {
+			return true;
+		}
+		else {
+			return setBack.getWorld().equals(loc.getWorld());
+		}
 	}
 	
 
@@ -428,13 +430,21 @@ public class MovingData extends ACheckData {
 	}
 
 	public final void setMorePacketsSetBack(final PlayerLocation loc) {
-		if (morePacketsSetback == null) morePacketsSetback = loc.getLocation();
-		else LocUtil.set(morePacketsSetback, loc);
+		if (morePacketsSetback == null) {
+			morePacketsSetback = loc.getLocation();
+		}
+		else {
+			LocUtil.set(morePacketsSetback, loc);
+		}
 	}
 	
 	public final void setMorePacketsSetBack(final Location loc) {
-		if (morePacketsSetback == null) morePacketsSetback = LocUtil.clone(loc);
-		else LocUtil.set(morePacketsSetback, loc);
+		if (morePacketsSetback == null) {
+			morePacketsSetback = LocUtil.clone(loc);
+		}
+		else {
+			LocUtil.set(morePacketsSetback, loc);
+		}
 	}
 
 	public Location getMorePacketsSetBack() {
@@ -446,13 +456,21 @@ public class MovingData extends ACheckData {
 	}
 
 	public final void setMorePacketsVehicleSetBack(final PlayerLocation loc) {
-		if (morePacketsVehicleSetback == null) morePacketsVehicleSetback = loc.getLocation();
-		else LocUtil.set(morePacketsVehicleSetback, loc);
+		if (morePacketsVehicleSetback == null) {
+			morePacketsVehicleSetback = loc.getLocation();
+		}
+		else {
+			LocUtil.set(morePacketsVehicleSetback, loc);
+		}
 	}
 	
 	public final void setMorePacketsVehicleSetBack(final Location loc) {
-		if (morePacketsVehicleSetback == null) morePacketsVehicleSetback = LocUtil.clone(loc);
-		else LocUtil.set(morePacketsVehicleSetback, loc);
+		if (morePacketsVehicleSetback == null) {
+			morePacketsVehicleSetback = LocUtil.clone(loc);
+		}
+		else {
+			LocUtil.set(morePacketsVehicleSetback, loc);
+		}
 	}
 
 	public final Location getMorePacketsVehicleSetBack() {

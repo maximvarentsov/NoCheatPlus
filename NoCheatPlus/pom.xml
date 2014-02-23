@@ -4,7 +4,7 @@
   <!-- Informations -->
   <artifactId>nocheatplus</artifactId>
   <name>NoCheatPlus</name>
-  <version>3.10.8-SNAPSHOT</version>
+  <version>3.10.9-SNAPSHOT</version>
   <description>Detect and fight the exploitation of various flaws/bugs in Minecraft.</description>
   <url>http://dev.bukkit.org/server-mods/nocheatplus</url>
   
@@ -69,7 +69,6 @@
                   <include>fr.neatmonster:ncpcommons</include>
                   <include>fr.neatmonster:ncpcore</include>
                   <include>fr.neatmonster:ncpcompatbukkit</include>
-                  <include>fr.neatmonster:ncpcompatcb2511</include>
                   <include>fr.neatmonster:ncpcompatcb2512</include>
                   <include>fr.neatmonster:ncpcompatcb2545</include>
                   <include>fr.neatmonster:ncpcompatcb2602</include>
