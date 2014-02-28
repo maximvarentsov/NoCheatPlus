@@ -282,18 +282,15 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 				target = LocUtil.clone(loc);
 			}
 			useLoc.setWorld(null);
-			if (target != null) {
-				// Actually this should not possibly be null, this is a block for "future" purpose, feel free to criticize it.
-				if (sfCheck && cc.sfFallDamage && noFall.isEnabled(player)) {
-					// Check if to deal damage.
-					double y = loc.getY();
-					if (data.hasSetBack()) y = Math.min(y, data.getSetBackY());
-					noFall.checkDamage(player, data, y);
-				}
-				// Teleport.
-				data.setTeleported(target); // Should be enough. | new Location(target.getWorld(), target.getX(), target.getY(), target.getZ(), target.getYaw(), target.getPitch());
-				player.teleport(target, TeleportCause.PLUGIN);// TODO: schedule / other measures ?
+			if (sfCheck && cc.sfFallDamage && noFall.isEnabled(player)) {
+				// Check if to deal damage.
+				double y = loc.getY();
+				if (data.hasSetBack()) y = Math.min(y, data.getSetBackY());
+				noFall.checkDamage(player, data, y);
 			}
+			// Teleport.
+			data.prepareSetBack(target); // Should be enough. | new Location(target.getWorld(), target.getX(), target.getY(), target.getZ(), target.getYaw(), target.getPitch());
+			player.teleport(target, TeleportCause.PLUGIN);// TODO: schedule / other measures ?
 		}
 		else{
 			// Reset bed ...
@@ -888,7 +885,7 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 //							public void run() {
 //								if (!data.hasSetBackWorldChanged(setBack)) { // && data.isSetBack(setBack)) {
 //									player.sendMessage("SETBACK FROM MC DERP.");
-//									player.teleport(setBack);
+//									player.teleport(setBack, TeleportCause.PLUGIN);
 //								}
 //							}
 //						});
@@ -1389,8 +1386,8 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			final MovingData data = MovingData.getData(player);
 			final Location newTo = enforceLocation(player, player.getLocation(useLoc), data);
 			if (newTo != null) {
-				data.setTeleported(newTo);
-				player.teleport(newTo);
+				data.prepareSetBack(newTo);
+				player.teleport(newTo, TeleportCause.PLUGIN);
 			}
 		}
 		if (!rem.isEmpty()) {
