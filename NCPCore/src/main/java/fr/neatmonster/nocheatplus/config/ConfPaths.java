@@ -84,6 +84,7 @@ public abstract class ConfPaths {
 	private static final String PROTECT_COMMANDS						 = PROTECT + "commands.";
 	private static final String PROTECT_COMMANDS_CONSOLEONLY			 = PROTECT_COMMANDS + "consoleonly.";
 	public  static final String PROTECT_COMMANDS_CONSOLEONLY_ACTIVE		 = PROTECT_COMMANDS_CONSOLEONLY + "active";
+	public  static final String PROTECT_COMMANDS_CONSOLEONLY_MSG		 = PROTECT_COMMANDS_CONSOLEONLY + "message";
 	public  static final String PROTECT_COMMANDS_CONSOLEONLY_CMDS		 = PROTECT_COMMANDS_CONSOLEONLY + "commands";
 	// Plugins settings.
 	private static final String PROTECT_PLUGINS							 = PROTECT + "plugins.";
@@ -567,10 +568,12 @@ public abstract class ConfPaths {
 	public static final String  MOVING_SPRINTINGGRACE					 = MOVING + "sprintinggrace";
 	public static final String  MOVING_ASSUMESPRINT						 = MOVING + "assumesprint";
 	public static final String  MOVING_SPEEDGRACE					 	 = MOVING + "speedgrace";
+	public static final String  MOVING_ENFORCELOCATION					 = MOVING + "enforcelocation";
 	
 	private static final String MOVING_VEHICLES							 = MOVING + "vehicles.";
 	public static final String  MOVING_VEHICLES_ENFORCELOCATION			 = MOVING_VEHICLES + "enforcelocation";
 	public static final String  MOVING_VEHICLES_PREVENTDESTROYOWN		 = MOVING_VEHICLES + "preventdestroyown";
+	
 	
     public static final String  STRINGS                                  = "strings";
 

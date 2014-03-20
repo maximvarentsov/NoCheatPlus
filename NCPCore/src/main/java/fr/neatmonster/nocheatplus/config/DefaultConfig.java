@@ -71,6 +71,7 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.PROTECT_PLUGINS_HIDE_NOCOMMAND_CMDS, new LinkedList<String>());
         // Commands (other).
         set(ConfPaths.PROTECT_COMMANDS_CONSOLEONLY_ACTIVE, false);
+        set(ConfPaths.PROTECT_COMMANDS_CONSOLEONLY_MSG, "&cI'm sorry, but this command can't be executed in chat. Use the console instead!");
         set(ConfPaths.PROTECT_COMMANDS_CONSOLEONLY_CMDS, Arrays.asList("op", "deop"));
         // Client motd.
         set(ConfPaths.PROTECT_CLIENTS_MOTD_ACTIVE, true);
@@ -409,6 +410,7 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.MOVING_SPRINTINGGRACE, 2.0);
         set(ConfPaths.MOVING_ASSUMESPRINT, true);
         set(ConfPaths.MOVING_SPEEDGRACE, 4.0);
+        set(ConfPaths.MOVING_ENFORCELOCATION, true);
         
         // TODO: An extra file might suit these.
         final String start = "[player] failed [check]: ";
