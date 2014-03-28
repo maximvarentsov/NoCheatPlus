@@ -1,5 +1,7 @@
 package fr.neatmonster.nocheatplus.checks.fight;
 
+import java.util.Iterator;
+
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -25,6 +27,8 @@ import fr.neatmonster.nocheatplus.checks.CheckType;
 import fr.neatmonster.nocheatplus.checks.combined.Combined;
 import fr.neatmonster.nocheatplus.checks.combined.Improbable;
 import fr.neatmonster.nocheatplus.checks.inventory.Items;
+import fr.neatmonster.nocheatplus.checks.moving.LocationTrace;
+import fr.neatmonster.nocheatplus.checks.moving.LocationTrace.TraceEntry;
 import fr.neatmonster.nocheatplus.checks.moving.MediumLiftOff;
 import fr.neatmonster.nocheatplus.checks.moving.MovingConfig;
 import fr.neatmonster.nocheatplus.checks.moving.MovingData;
@@ -114,6 +118,7 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         final long msAge; // Milliseconds the ticks actually took.
         final double normalizedMove; // Blocks per second.
         // TODO: relative distance (player - target)!
+        // TODO: Use trace for this ?
         if (data.lastAttackedX == Double.MAX_VALUE || tick < data.lastAttackTick || worldChanged || tick - data.lastAttackTick > 20){
         	// TODO: 20 ?
         	tickAge = 0;
@@ -132,15 +137,28 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         
         // TODO: dist < width => skip some checks (direction, ..)
     	
-        // Check for self hit exploits (mind that projectiles should be excluded)
+        final LocationTrace damagedTrace;
+        final Player damagedPlayer;
         if (damaged instanceof Player){
-        	final Player damagedPlayer = (Player) damaged;
+        	damagedPlayer = (Player) damaged;
         	if (cc.debug && damagedPlayer.hasPermission(Permissions.ADMINISTRATION_DEBUG)){
         		damagedPlayer.sendMessage("Attacked by " + player.getName() + ": inv=" + mcAccess.getInvulnerableTicks(damagedPlayer) + " ndt=" + damagedPlayer.getNoDamageTicks());
         	}
+        	// Check for self hit exploits (mind that projectiles are excluded from this.)
         	if (selfHit.isEnabled(player) && selfHit.check(player, damagedPlayer, data, cc)) {
         		cancelled = true;
         	}
+        	// Get+update the damaged players.
+        	// TODO: Problem with NPCs: data stays (not a big problem).
+        	// (This is done even if the event has already been cancelled, to keep track, if the player is on a horse.)
+        	damagedTrace = MovingData.getData(damagedPlayer).updateTrace(damagedPlayer, damagedLoc, tick);
+        } else {
+        	damagedPlayer = null; // TODO: This is a temporary workaround.
+        	// Use a fake trace.
+        	// TODO: Provide for entities too? E.g. one per player, or a fully fledged bookkeeping thing (EntityData).
+        	final MovingConfig mcc = MovingConfig.getConfig(damagedLoc.getWorld().getName());
+        	damagedTrace = null; //new LocationTrace(mcc.traceSize, mcc.traceMergeDist);
+        	//damagedTrace.addEntry(tick, damagedLoc.getX(), damagedLoc.getY(), damagedLoc.getZ());
         }
         
         if (cc.cancelDead){
@@ -182,27 +200,15 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         	}
         }
 
-		if (angle.isEnabled(player)) {
-			// The "fast turning" checks are checked in any case because they accumulate data.
-			// Improbable yaw changing.
-			if (Combined.checkYawRate(player, loc.getYaw(), now, worldName, cc.yawRateCheck)) {
-				// (Check or just feed).
-				// TODO: Work into this somehow attacking the same aim and/or similar aim position (not cancel then).
-				cancelled = true;
-			}
-			// Angle check.
-			if (angle.check(player, worldChanged)) cancelled = true;
-		}
-
-        if (!cancelled && critical.isEnabled(player) && critical.check(player, loc)) {
+        if (!cancelled && critical.isEnabled(player) && critical.check(player, loc, data, cc)) {
         	cancelled = true;
         }
         
-        if (!cancelled && knockback.isEnabled(player) && knockback.check(player)) {
+        if (!cancelled && knockback.isEnabled(player) && knockback.check(player, data, cc)) {
         	cancelled = true;
         }
         
-        if (!cancelled && noSwing.isEnabled(player) && noSwing.check(player)) {
+        if (!cancelled && noSwing.isEnabled(player) && noSwing.check(player, data, cc)) {
         	cancelled = true;
         }
         
@@ -210,15 +216,100 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
         	cancelled = true;
         }
         
-        // TODO: Order of the last two [might put first] ?
+        // TODO: Order of all these checks ...
+        // Checks that use LocationTrace.
+
+        // TODO: Later optimize (...), should reverse check window ?
         
-        if (!cancelled && reach.isEnabled(player) && reach.check(player, loc, damaged, damagedLoc)) {
-        	cancelled = true;
+        // First loop through reach and direction, to determine a window.
+        final boolean reachEnabled = !cancelled && reach.isEnabled(player);
+        final boolean directionEnabled = !cancelled && direction.isEnabled(player);
+        
+        if (reachEnabled || directionEnabled) {
+        	if (damagedPlayer != null) {
+        		// TODO: Move to a method (trigonometric checks).
+                final ReachContext reachContext = reachEnabled ? reach.getContext(player, loc, damaged, damagedLoc, data, cc) : null;
+                final DirectionContext directionContext = directionEnabled ? direction.getContext(player, loc, damaged, damagedLoc, data, cc) : null;
+                
+                final long traceOldest = tick; // - damagedTrace.getMaxSize(); // TODO: Set by window.
+                // TODO: Iterating direction: could also start from latest, be it on occasion.
+                Iterator<TraceEntry> traceIt = damagedTrace.maxAgeIterator(traceOldest);
+                
+                boolean violation = true; // No tick with all checks passed.
+                boolean reachPassed = !reachEnabled; // Passed individually for some tick.
+                boolean directionPassed = !directionEnabled; // Passed individually for some tick.
+                // TODO: Maintain a latency estimate + max diff and invalidate completely (i.e. iterate from latest NEXT time)], or just max latency.
+                while (traceIt.hasNext()) {
+                	final TraceEntry entry = traceIt.next();
+                	// Simplistic just check both until end or hit.
+                	// TODO: Other default distances/tolerances.
+                	boolean thisPassed = true;
+                	if (reachEnabled) {
+                		if (reach.loopCheck(player, loc, damagedPlayer, entry, reachContext, data, cc)) {
+                			thisPassed = false;
+                		} else {
+                			reachPassed = true;
+                		}
+                	}
+                	// TODO: For efficiency one could omit checking at all if reach is failed all the time.
+                	if (directionEnabled && (reachPassed || !directionPassed)) {
+                		if (direction.loopCheck(player, damagedLoc, damagedPlayer, entry, directionContext, data, cc)) {
+                			thisPassed = false;
+                		} else {
+                			directionPassed = true;
+                		}
+                	}
+                	if (thisPassed) {
+                		// TODO: Log/set estimated latency.
+                		violation = false;
+                		break;
+                	}
+                }
+                // TODO: How to treat mixed state: violation && reachPassed && directionPassed [current: use min violation // thinkable: silent cancel, if actions have cancel (!)]
+                // TODO: Adapt according to strictness settings?
+                if (reachEnabled) {
+                	// TODO: Might ignore if already cancelled by mixed/silent cancel.
+                	if (reach.loopFinish(player, loc, damagedPlayer, reachContext, violation, data, cc)) {
+                		cancelled = true;
+                	}
+                }
+                if (directionEnabled) {
+                	// TODO: Might ignore if already cancelled.
+                	if (direction.loopFinish(player, loc, damagedPlayer, directionContext, violation, data, cc)) {
+                		cancelled = true;
+                	}
+                }
+                // TODO: Log exact state, probably record min/max latency (individually).
+        	} else {
+        		// Still use the classic methods for non-players. maybe[]
+        		if (reachEnabled && reach.check(player, loc, damaged, damagedLoc, data, cc)) {
+                	cancelled = true;
+                }
+                
+                if (directionEnabled && direction.check(player, loc, damaged, damagedLoc, data, cc)) {
+                	cancelled = true;
+                }
+        	}
         }
         
-        if (!cancelled && direction.isEnabled(player) && direction.check(player, loc, damaged, damagedLoc)) {
-        	cancelled = true;
-        }
+        // Check angle with allowed window.
+        if (angle.isEnabled(player)) {
+        	// TODO: Revise, use own trace.
+			// The "fast turning" checks are checked in any case because they accumulate data.
+			// Improbable yaw changing: Moving events might be missing up to a ten degrees change.
+			if (Combined.checkYawRate(player, loc.getYaw(), now, worldName, cc.yawRateCheck)) {
+				// (Check or just feed).
+				// TODO: Work into this somehow attacking the same aim and/or similar aim position (not cancel then).
+				cancelled = true;
+			}
+			// Angle check.
+			if (angle.check(player, worldChanged, data, cc)) {
+				if (!cancelled && cc.debug) {
+					System.out.println(player.getName() + " fight.angle cancel without yawrate cancel.");
+				}
+				cancelled = true;
+			}
+		}
         
         // Set values.
         data.lastWorld = worldName;
@@ -232,6 +323,7 @@ public class FightListener extends CheckListener implements JoinLeaveListener{
     	// TODO: Use stored distance calculation same as reach check?
     	// TODO: For pvp: make use of "player was there" heuristic later on.
     	// TODO: Confine further with simple pre-conditions.
+    	// TODO: Evaluate if moving traces can help here.
     	if (!cancelled && TrigUtil.distance(loc.getX(), loc.getZ(), damagedLoc.getX(), damagedLoc.getZ()) < 4.5){
     		final MovingData mData = MovingData.getData(player);
 			// Check if fly checks is an issue at all, re-check "real sprinting".
