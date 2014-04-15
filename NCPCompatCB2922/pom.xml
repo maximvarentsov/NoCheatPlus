@@ -31,7 +31,7 @@
     </dependency>
   </dependencies>
 
-  <description>Compatibility for CB2922 (MC 1.7.5).
+  <description>Compatibility for CB2922 (MC 1.7.2).
 
 Version updating is done for the NoCheatPlus sub-module.</description>
 </project>
