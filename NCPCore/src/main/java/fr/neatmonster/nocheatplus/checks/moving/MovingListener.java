@@ -365,15 +365,20 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 		final Location to = event.getTo();
 		Location newTo = null;
 		
+		// Check problematic yaw/pitch values.
+		if (LocUtil.needsDirectionCorrection(from.getYaw(), from.getPitch())
+				|| LocUtil.needsDirectionCorrection(to.getYaw(), to.getPitch())) {
+			DataManager.getPlayerData(player).task.correctDirection();
+		}
+		
 		// TODO: Check illegal moves here anyway (!).
 		// TODO: Check if vehicle move logs correctly (fake).
 		
 		// Early return checks (no full processing).
-		final boolean earlyReturn;
+		boolean earlyReturn = false;
 		if (player.isInsideVehicle()) {
 			// No full processing for players in vehicles.
 			newTo = onPlayerMoveVehicle(player, from, to, data);
-			earlyReturn = true;
 		} else if (player.isDead() || player.isSleeping()) {
 			// Ignore dead players.
 			data.sfHoverTicks = -1;
@@ -387,14 +392,20 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			// Keep hover ticks.
 			// Ignore changing worlds.
 			earlyReturn = true;
-		} else {
-			// COntinue with full processing.
-			earlyReturn = false;
-		}
+		} // else:  Continue with full processing.
+		
 		// TODO: Might log base parts here (+extras).
-		if (earlyReturn) {
+		if (earlyReturn || newTo != null) {
 			// TODO: Log "early return: " + tags.
 			if (newTo != null) {
+				// Illegal Yaw/Pitch.
+	        	if (LocUtil.needsYawCorrection(newTo.getYaw())) {
+	        		newTo.setYaw(LocUtil.correctYaw(newTo.getYaw()));
+	        	}
+	        	if (LocUtil.needsPitchCorrection(newTo.getPitch())) {
+	        		newTo.setPitch(LocUtil.correctPitch(newTo.getPitch()));
+	        	}
+	        	// Set.
 				event.setTo(newTo);
 			}
 			return;
@@ -591,8 +602,16 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			}
 		}
 
-        // Did one of the checks decide we need a new "to"-location?
+        // Set-back handling.
         if (newTo != null) {
+        	// Illegal Yaw/Pitch.
+        	if (LocUtil.needsYawCorrection(newTo.getYaw())) {
+        		newTo.setYaw(LocUtil.correctYaw(newTo.getYaw()));
+        	}
+        	if (LocUtil.needsPitchCorrection(newTo.getPitch())) {
+        		newTo.setPitch(LocUtil.correctPitch(newTo.getPitch()));
+        	}
+        	
         	// Reset some data.
         	data.prepareSetBack(newTo);
 			
@@ -621,7 +640,7 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
         parkedInfo.add(moveInfo);
     }
     
-    /**
+	/**
      * Called from player-move checking, if the player is inside of a vehicle.
      * @param player
      * @param from
@@ -1244,6 +1263,11 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 				// DEBUG
 				LogUtil.logInfo("[NoCheatPlus] Player join: Loaded " + loaded + " chunk" + (loaded == 1 ? "" : "s") + " for the world " + loc.getWorld().getName() +  " for player: " + player.getName());
 			}
+		}
+		
+		// Bad pitch/yaw, just in case.
+		if (LocUtil.needsDirectionCorrection(useLoc.getYaw(), useLoc.getPitch())) {
+			DataManager.getPlayerData(player).task.correctDirection();
 		}
 		
 		// Cleanup.
