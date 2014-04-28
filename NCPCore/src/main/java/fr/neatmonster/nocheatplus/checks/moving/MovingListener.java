@@ -375,10 +375,11 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 		// TODO: Check if vehicle move logs correctly (fake).
 		
 		// Early return checks (no full processing).
-		boolean earlyReturn = false;
+		final boolean earlyReturn;
 		if (player.isInsideVehicle()) {
 			// No full processing for players in vehicles.
 			newTo = onPlayerMoveVehicle(player, from, to, data);
+			earlyReturn = true;
 		} else if (player.isDead() || player.isSleeping()) {
 			// Ignore dead players.
 			data.sfHoverTicks = -1;
@@ -392,10 +393,12 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			// Keep hover ticks.
 			// Ignore changing worlds.
 			earlyReturn = true;
-		} // else:  Continue with full processing.
+		} else {
+			earlyReturn = false;
+		}
 		
 		// TODO: Might log base parts here (+extras).
-		if (earlyReturn || newTo != null) {
+		if (earlyReturn) {
 			// TODO: Log "early return: " + tags.
 			if (newTo != null) {
 				// Illegal Yaw/Pitch.
@@ -773,31 +776,6 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
         data.clearMorePacketsData();
         // TODO: This event might be redundant (!).
     }
-
-	/**
-	 * When a player respawns, all information related to the moving checks
-	 * becomes invalid.
-	 * 
-	 * @param event
-	 *            the event
-	 */
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerRespawn(final PlayerRespawnEvent event) {
-		final Player player = event.getPlayer();
-		final MovingData data = MovingData.getData(player);
-		data.clearFlyData();
-		data.clearMorePacketsData();
-		data.setSetBack(event.getRespawnLocation());
-		// TODO: consider data.resetPositions(data.setBack);
-		// (Not putting hover in at respawn due to chunk sending.)
-		// TODO: Might use grace ticks for this too (and bigger teleports).
-//		final MovingConfig cc = MovingConfig.getConfig(player);
-//		if (cc.sfHoverCheck) {
-//			// Assume the player might be hovering.
-//			data.sfHoverTicks = 0;
-//			hoverTicks.add(player.getName());
-//		}
-	}
 	
 	/**
 	 * Clear fly data on death.
@@ -1207,14 +1185,32 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
         // Entity fall-distance should be reset elsewhere.
     }
     
+	/**
+	 * When a player respawns, all information related to the moving checks
+	 * becomes invalid.
+	 * 
+	 * @param event
+	 *            the event
+	 */
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onPlayerRespawn(final PlayerRespawnEvent event) {
+		final Player player = event.getPlayer();
+		final MovingData data = MovingData.getData(player);
+		final MovingConfig cc = MovingConfig.getConfig(player);
+		
+		final Location loc = event.getRespawnLocation();
+		data.clearFlyData();
+		data.setSetBack(loc);
+		
+		// Handle respawn like join.
+		dataOnJoin(player, loc, data, cc);
+	}
+    
 	@Override
 	public void playerJoins(final Player player) {
 		final MovingData data = MovingData.getData(player);
 		final MovingConfig cc = MovingConfig.getConfig(player);
-		final int tick = TickTask.getTick();
-		// TODO: on existing set back: detect world changes and loss of world on join (+ set up some paradigm).
-		data.clearMorePacketsData();
-		data.removeAllVelocity();
+
 		final Location loc = player.getLocation(useLoc);
 		
 		// Correct set-back on join.
@@ -1227,9 +1223,40 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			data.setSetBack(loc);
 		}
 		
+		dataOnJoin(player, loc, data, cc);
+		
+		// Cleanup.
+		useLoc.setWorld(null);
+		
+	}
+	
+	
+	/**
+	 * Alter data for players joining (join, respawn).<br>
+	 * Do before, if necessary:<br>
+	 * <li>data.clearFlyData()</li>
+	 * <li>data.setSetBack(...)</li>
+	 * @param player
+	 * @param loc Can be useLoc (!).
+	 * @param data
+	 * @param cc
+	 */
+	private void dataOnJoin(Player player, Location loc, MovingData data, MovingConfig cc) {
+		final int tick = TickTask.getTick();
+		// Check loaded chunks.
+		if (cc.loadChunksOnJoin) {
+			final int loaded = BlockCache.ensureChunksLoaded(loc.getWorld(), loc.getX(), loc.getZ(), 3.0);
+			if (loaded > 0 && cc.debug && BuildParameters.debugLevel > 0) {
+				// DEBUG
+				LogUtil.logInfo("[NoCheatPlus] Player join: Loaded " + loaded + " chunk" + (loaded == 1 ? "" : "s") + " for the world " + loc.getWorld().getName() +  " for player: " + player.getName());
+			}
+		}
+		
 		// Always reset position to this one.
 		// TODO: more fine grained reset?
 		data.resetPositions(loc);
+		data.clearMorePacketsData();
+		data.removeAllVelocity();
 		data.resetTrace(loc, tick, cc.traceSize, cc.traceMergeDist);
 		
 		// More resetting.
@@ -1243,8 +1270,24 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 		}
 		
 		// Hover.
+		initHover(player, data, cc, data.toWasReset); // isOnGroundOrResetCond
+		
+		// Bad pitch/yaw, just in case.
+		if (LocUtil.needsDirectionCorrection(useLoc.getYaw(), useLoc.getPitch())) {
+			DataManager.getPlayerData(player).task.correctDirection();
+		}
+	}
+
+	/**
+	 * Initialize the hover check for a player (login, respawn). 
+	 * @param player
+	 * @param data
+	 * @param cc
+	 * @param isOnGroundOrResetCond 
+	 */
+	private void initHover(final Player player, final MovingData data, final MovingConfig cc, final boolean isOnGroundOrResetCond) {
 		// Reset hover ticks until a better method is used.
-		if (cc.sfHoverCheck) {
+		if (!isOnGroundOrResetCond && cc.sfHoverCheck) {
 			// Start as if hovering already.
 			// Could check shouldCheckSurvivalFly(player, data, cc), but this should be more sharp (gets checked on violation).
 			data.sfHoverTicks = 0;
@@ -1255,24 +1298,6 @@ public class MovingListener extends CheckListener implements TickListener, IRemo
 			data.sfHoverLoginTicks = 0;
 			data.sfHoverTicks = -1;
 		}
-		
-		// Check loaded chunks.
-		if (cc.loadChunksOnJoin) {
-			final int loaded = BlockCache.ensureChunksLoaded(loc.getWorld(), loc.getX(), loc.getZ(), 3.0);
-			if (loaded > 0 && cc.debug && BuildParameters.debugLevel > 0) {
-				// DEBUG
-				LogUtil.logInfo("[NoCheatPlus] Player join: Loaded " + loaded + " chunk" + (loaded == 1 ? "" : "s") + " for the world " + loc.getWorld().getName() +  " for player: " + player.getName());
-			}
-		}
-		
-		// Bad pitch/yaw, just in case.
-		if (LocUtil.needsDirectionCorrection(useLoc.getYaw(), useLoc.getPitch())) {
-			DataManager.getPlayerData(player).task.correctDirection();
-		}
-		
-		// Cleanup.
-		useLoc.setWorld(null);
-		
 	}
 
 	@Override
