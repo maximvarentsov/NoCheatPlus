@@ -125,7 +125,7 @@ public class BlockPlaceListener extends CheckListener {
         }
 
         // No swing check (player doesn't swing their arm when placing a lily pad).
-        if (!cancelled && placedMat != Material.WATER_LILY && noSwing.isEnabled(player) && noSwing.check(player, data, cc)) {
+        if (!cancelled && !cc.noSwingExceptions.contains(placedMat) && noSwing.isEnabled(player) && noSwing.check(player, data, cc)) {
         	// Consider skipping all insta placables or using simplified version (true or true within time frame).
         	cancelled = true;
         }
@@ -134,7 +134,6 @@ public class BlockPlaceListener extends CheckListener {
         if (!cancelled && reach.isEnabled(player) && reach.check(player, block, data, cc)) {
         	cancelled = true;
         }
-        useLoc.setWorld(null);
 
         // Direction check.
         if (!cancelled && direction.isEnabled(player) && direction.check(player, block, blockAgainst, data, cc)) {
@@ -150,6 +149,8 @@ public class BlockPlaceListener extends CheckListener {
         if (cancelled) {
         	event.setCancelled(cancelled);
         }
+        // Cleanup
+        // Reminder(currently unused): useLoc.setWorld(null);
     }
     
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
