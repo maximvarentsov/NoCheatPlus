@@ -36,6 +36,7 @@ import fr.neatmonster.nocheatplus.logging.LogUtil;
  * - reading (all) the default properties from a file too.
  *
  */
+@SuppressWarnings("deprecation")
 public class BlockProperties {
 	
 	/**
@@ -447,8 +448,8 @@ public class BlockProperties {
 		
 		tools.put(359, new ToolProps(ToolType.SHEARS, MaterialBase.NONE));
 	}
-
-    private static void initBlocks(final MCAccess mcAccess, final WorldConfigProvider<?> worldConfigProvider) {
+	
+	private static void initBlocks(final MCAccess mcAccess, final WorldConfigProvider<?> worldConfigProvider) {
 		Arrays.fill(blocks, null);
 		// Initalize block flags
 		// Generic initialization.
@@ -878,6 +879,16 @@ public class BlockProperties {
 	
 	/**
 	 * Convenience method.
+	 * @param blockType
+	 * @param player
+	 * @return
+	 */
+	public static long getBreakingDuration(final Material BlockType, final Player player){
+		return getBreakingDuration(BlockType.getId(), player);
+	}
+	
+	/**
+	 * Convenience method.
 	 * @param blockId
 	 * @param player
 	 * @return
@@ -1148,8 +1159,11 @@ public class BlockProperties {
 		if (blockId < 0 || blockId >= blocks.length) throw new IllegalArgumentException("The blockId is outside of supported range: " + blockId);
 		blocks[blockId] = blockProps;
 	}
-
-
+	
+	public static boolean isValidTool(final Material blockType, final ItemStack itemInHand) {
+		return isValidTool(blockType.getId(), itemInHand);
+	}
+	
 	public static boolean isValidTool(final int blockId, final ItemStack itemInHand) {
 		final BlockProps blockProps = getBlockProps(blockId);
 		final ToolProps toolProps = getToolProps(itemInHand);
@@ -1217,6 +1231,24 @@ public class BlockProperties {
 		pLoc.cleanup();
 		return res;
 	}
+	
+	/**
+	 * Straw-man-method to hide warnings. Rather intended for display in debug/alert messages.
+	 * @param blockType
+	 * @return
+	 */
+	public static int getId(final Material blockType) {
+		return blockType.getId();
+	}
+	
+	/**
+	 * Straw-man method to hide warnings.
+	 * @param id
+	 * @return
+	 */
+	public static Material getMaterial(final int id) {
+		return Material.getMaterial(id);
+	}
 
 	/**
 	 * @deprecated Typo in method name.
@@ -1227,8 +1259,16 @@ public class BlockProperties {
 		return blockFlags[id];
 	}
 	
+	public static final long getBlockFlags(final Material blockType){
+		return getBlockFlags(blockType.getId());
+	}
+	
 	public static final long getBlockFlags(final int id){
 		return blockFlags[id];
+	}
+	
+	public static final void setBlockFlags(final Material blockType, final long flags){
+		setBlockFlags(blockType.getId(), flags);
 	}
 
 	public static final void setBlockFlags(final int id, final long flags){
@@ -1258,12 +1298,25 @@ public class BlockProperties {
 	public static final boolean isClimbable(final int id) {
 		return (blockFlags[id] & F_CLIMBABLE) != 0;
 	}
+	
+	/**
+	 * Climbable material that needs to be attached to a block, to allow players to climb up.<br>
+	 * Currently only applies to vines. There is no flag for such, yet.
+	 * @param id
+	 * @return
+	 */
+	public static final boolean isAttachedClimbable(final int id) {
+		return id == Material.VINE.getId();
+	}
 
 	public static final boolean isStairs(final int id) {
 		return (blockFlags[id] & F_STAIRS) != 0;
 	}
-
-
+	
+	public static final boolean isLiquid(final Material blockType) {
+		return isLiquid(blockType.getId());
+	}
+	
 	public static final boolean isLiquid(final int id) {
 		return (blockFlags[id] & F_LIQUID) != 0;
 	}
@@ -1278,11 +1331,29 @@ public class BlockProperties {
 	
 	/**
 	 * Might hold true for liquids too.
+	 * @param blockType
+	 * @return
+	 */
+	public static final boolean isSolid(final Material blockType){
+		return isSolid(blockType.getId());
+	}
+	
+	/**
+	 * Might hold true for liquids too.
 	 * @param id
 	 * @return
 	 */
 	public static final boolean isSolid(final int id){
 		return (blockFlags[id] & F_SOLID) != 0;
+	}
+	
+	/**
+	 * Might hold true for liquids too.
+	 * @param blockType
+	 * @return
+	 */
+	public static final boolean isGround(final Material blockType){
+		return isGround(blockType.getId());
 	}
 	
 	/**
@@ -1292,6 +1363,16 @@ public class BlockProperties {
      */
     public static final boolean isGround(final int id){
         return (blockFlags[id] & F_GROUND) != 0;
+    }
+    
+    /**
+     * Just check if a position is not inside of a block that has a bounding box.<br>
+	 * This is an inaccurate check, it also returns false for doors etc.
+     * @param blockType
+     * @return
+     */
+    public static final boolean isPassable(final Material blockType){
+    	return isPassable(blockType.getId());
     }
 	
 	/**
@@ -1816,6 +1897,22 @@ public class BlockProperties {
             }
         }
         return false;
+    }
+    
+    /**
+     * Convenience method for Material instead of block id.
+     * @param access
+     * @param minX
+     * @param minY
+     * @param minZ
+     * @param maxX
+     * @param maxY
+     * @param maxZ
+     * @param mat
+     * @return
+     */
+    public static final boolean collidesId(final BlockCache access, final double minX, double minY, final double minZ, final double maxX, final double maxY, final double maxZ, final Material mat){
+    	return collidesId(access, minX, minY, minZ, maxX, maxY, maxZ, mat.getId());
     }
     
     /**

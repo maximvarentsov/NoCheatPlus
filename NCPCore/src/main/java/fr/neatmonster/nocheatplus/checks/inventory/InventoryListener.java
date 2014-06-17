@@ -228,6 +228,7 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
         if (event.hasItem()){
             final ItemStack item = event.getItem();
             final Material type = item.getType();
+            // TODO: Get Magic values (800) from the config.
             if (type == Material.BOW){
                 final long now = System.currentTimeMillis();
                 // It was a bow, the player starts to pull the string, remember this time.
@@ -242,9 +243,13 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
             } else resetAll = true;
             
             // Illegal enchantments hotfix check.
-            if (Items.checkIllegalEnchantments(player, item)) event.setCancelled(true);
+            if (Items.checkIllegalEnchantments(player, item)) {
+            	event.setCancelled(true);
+            }
         }
-        else resetAll = true;
+        else {
+        	resetAll = true;
+        }
         
         if (resetAll){
             // Nothing that we are interested in, reset data.
@@ -257,14 +262,16 @@ public class InventoryListener  extends CheckListener implements JoinLeaveListen
     @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     public final void onPlayerInteractEntity(final PlayerInteractEntityEvent event) {
     	final Player player = event.getPlayer();
-    	if (player.getGameMode() == GameMode.CREATIVE) return;
+    	if (player.getGameMode() == GameMode.CREATIVE) {
+    		return;
+    	}
     	if (player.isDead() && BridgeHealth.getHealth(player) <= 0.0) {
     		// No zombies.
     		event.setCancelled(true);
     		return;
     	}
     	final ItemStack stack = player.getItemInHand();
-    	if (stack != null && stack.getTypeId() == Material.MONSTER_EGG.getId() && items.isEnabled(player)){
+    	if (stack != null && stack.getType() == Material.MONSTER_EGG && items.isEnabled(player)){
     		event.setCancelled(true);
     	}
     }
