@@ -29,7 +29,9 @@
     <module>NCPCompatCB2882</module>
     <module>NCPCompatCB2922</module>
     <module>NCPCompatCB3026</module>
+    <module>NCPCompatCB3043</module>
     <module>NCPCompatCBDev</module>
+    <module>NCPCompatProtocolLib</module>
     <module>NCPPlugin</module>
     <module>NoCheatPlus</module>
   </modules>
