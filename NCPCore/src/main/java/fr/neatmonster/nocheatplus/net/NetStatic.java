@@ -1,5 +1,7 @@
 package fr.neatmonster.nocheatplus.net;
 
+import java.util.List;
+
 import fr.neatmonster.nocheatplus.utilities.ActionFrequency;
 import fr.neatmonster.nocheatplus.utilities.TickTask;
 
@@ -30,9 +32,13 @@ public class NetStatic {
 	 * @param idealPackets
 	 *            The "ideal" amount of packets per second. Used for "burning"
 	 *            time frames by setting them to this amount.
-	 * @return The violation amount, i.e. "count above limit".
+	 * @param burstFreq Counting burst events, should be covering a minute or so.
+	 * @param burstPackets Packets in the first time window to add to burst count.
+	 * @param burstEPM Events per minute to trigger a burst violation.
+	 * @param tags List to add tags to, for which parts of this check triggered a violation.
+	 * @return The violation amount, i.e. "count above limit", 0.0 if no violation.
 	 */
-	public static double morePacketsCheck(final ActionFrequency packetFreq, final long time, final float packets, final float maxPackets, final float idealPackets) {
+	public static double morePacketsCheck(final ActionFrequency packetFreq, final long time, final float packets, final float maxPackets, final float idealPackets, final ActionFrequency burstFreq, final float burstPackets, final double burstDirect, final double burstEPM, final List<String> tags) {
 		// Pull down stuff.
 		final long winDur = packetFreq.bucketDuration();
 		final int winNum = packetFreq.numberOfBuckets();
@@ -75,7 +81,7 @@ public class NetStatic {
         final double fullCount;
         if (burnStart < winNum) {
         	// Assume all following time windows are burnt.
-        	// TODO: empty score + trailing score !? max with trailing bukkets * ideal (!)
+        	// TODO: empty score + trailing score !? max with trailing buckets * ideal (!)
         	final float trailing = Math.max(packetFreq.trailingScore(burnStart, 1f), burnScore * (winNum - burnStart - empty));
         	final float leading = packetFreq.leadingScore(burnStart, 1f);
         	fullCount = leading + trailing;
@@ -84,8 +90,32 @@ public class NetStatic {
         	fullCount = packetFreq.score(1f);
         }
         
-        return (double) fullCount - (double) (maxPackets * winNum * winDur / 1000f);
-        
+        double violation = 0.0; // Classic processing.
+        final double vEPSAcc = (double) fullCount - (double) (maxPackets * winNum * winDur / 1000f);
+        if (vEPSAcc > 0.0) {
+        	violation = Math.max(violation, vEPSAcc);
+        	tags.add("epsacc");
+        }
+        float burst = packetFreq.bucketScore(0);
+        if (burst > burstPackets) {
+        	// Account for server-side lag "minimally".
+        	burst /= TickTask.getLag(winDur, true);
+        	if (burst > burstPackets) {
+        		final double vBurstDirect = burst - burstDirect;
+        		if (vBurstDirect > 0.0) {
+        			violation = Math.max(violation, vBurstDirect);
+        			tags.add("burstdirect");
+        		}
+            	// TODO: Lag adaption for the burstFreq too [differing window durations]?
+            	burstFreq.add(time, 1f); // TODO: Remove float packets or do this properly.
+            	final double vBurstEPM = (double) burstFreq.score(0f) - burstEPM * (double) (burstFreq.bucketDuration() * burstFreq.numberOfBuckets()) / 60000.0;
+            	if (vBurstEPM > 0.0) {
+            		violation = Math.max(violation, vBurstEPM);
+            		tags.add("burstepm");
+            	}
+        	}
+        }
+        return Math.max(0.0, violation);
 	}
 	
 }

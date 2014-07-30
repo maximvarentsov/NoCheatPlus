@@ -9,6 +9,9 @@ dev-url: ${project.url}
 
 main: ${project.groupId}.${project.artifactId}.${project.name}
 
+softdepend:
+- ProtocolLib
+
 commands:
     nocheatplus:
         aliases: [ncp]
@@ -16,16 +19,15 @@ commands:
         # permissions: nocheatplus.admin.(...)
         usage: |
                Administrative commands overview:
+               /<command> top (entries) (check/s...) (sort by...) NEW.
                /<command> info (player): Violation summary for a player.
+               /<command> inspect (player): Status info for a player.
                /<command> notify on|off: In-game notifications per player.
                /<command> removeplayer (player) [(check type)]: Remove data.
                /<command> reload: Reload the configuration.
                /<command> lag: Lag-related info.
                /<command> version: Version information.
-               /<command> exemptions (player): Show exemptions.
-               /<command> exempt (player) [(check type)]: Exempt a player.
-               /<command> unexempt (player) [(check type)]: Unexempt a player.
-               /<command> commands: List all commands, more than shown here.
+               /<command> commands: List all commands, adds rarely used ones.
 
 permissions:
     nocheatplus:
@@ -266,6 +268,8 @@ permissions:
                             nocheatplus.notify: true
                     nocheatplus.command.reload:
                         description: Allow the player to reload NoCheatPlus configuration.
+                    nocheatplus.command.top:
+                        description: Allow to search violation history for top violations.
                     nocheatplus.command.info:
                         description: Allow to see violation info about a player.
                     nocheatplus.command.inspect:
@@ -280,31 +284,44 @@ permissions:
                         description: Allow use of the ncp ban command.
                     nocheatplus.command.kick:
                         description: Allow use of the ncp kick command.
-                    nocheatplus.command.kicklist:
-                        description: Allow use of the ncp kicklist command.
+                    nocheatplus.command.denylist:
+                        description: Allow use of the ncp denylist command (view players who are denied to login right now).
                     nocheatplus.command.lag:
                         description: Allow use of the ncp lag command.
                     nocheatplus.command.tell:
                         description: Allow use of the ncp tell command.
                     nocheatplus.command.delay:
                         description: Allow use of the ncp delay command.
-                    nocheatplus.command.tempkick:
-                        description: Allow use of the ncp tempkick command.
-                    nocheatplus.command.unkick:
-                        description: Allow use of the ncp unkick command.
+                    nocheatplus.command.denylogin:
+                        description: Allow use of the ncp denylogin command.
+                    nocheatplus.command.allowlogin:
+                        description: Allow use of the ncp allowlogin command.
                     nocheatplus.command.version:
                         description: Allow use of the ncp version command.
                     nocheatplus.command.removeplayer:
                         description: Allow use of the ncp removeplayer command.
                     nocheatplus.command.commands:
                         description: Allow use of the ncp commands command.
+                    nocheatplus.command.log:
+                        description: Show various stats/debugging information. [Incomplete, experimental.]
+                    nocheatplus.command.reset:
+                        description: Reset statistics or debugging counters.
+                    # Legacy:
+                    nocheatplus.command.tempkick:
+                        description: Obsolete, use nocheatplus.command.denylogin instead.
+                        children:
+                            nocheatplus.command.denylogin: true
+                    nocheatplus.command.unkick:
+                        description: Obsolete, use nocheatplus.command.allowlogin instead.
+                        children:
+                            nocheatplus.command.allowlogin: true
             
             # Bypass permissions (other than checks):
             nocheatplus.bypass:
                 description: Bypass other features than checks.
                 children:
                     nocheatplus.bypass.denylogin:
-                        description: Bypass the login denial, such as exists with the ncp tempkick command.
+                        description: Bypass the login denial, such as exists with the ncp denylogin command.
             
             # Various shortcuts:
             nocheatplus.shortcut:
@@ -314,9 +331,10 @@ permissions:
                         description: Info commands about players.
                         children:
                             nocheatplus.command.notify: true
+                            nocheatplus.command.top: true
                             nocheatplus.command.info: true
                             nocheatplus.command.exemptions: true
-                            nocheatplus.command.kicklist: true
+                            nocheatplus.command.denylist: true
                             nocheatplus.command.commands: true
                             # TODO: Put lag here ?
                     nocheatplus.shortcut.monitor:
@@ -332,9 +350,7 @@ permissions:
                         description: 'Permissions for "safe" administration, excluding rather critical operations like reload and action commands like ban/delay (arbitrary console commands!). Fit for "heavy" mods, include temp-kicking and exemptions, does bypass login-denial.'
                         children:
                             nocheatplus.shortcut.monitor: true
-                            nocheatplus.command.tempkick: true
-                            nocheatplus.command.kick: true
-                            nocheatplus.command.unkick: true
+                            nocheatplus.command.allowlogin: true
                             nocheatplus.command.exempt: true
                             nocheatplus.command.unexempt: true
                             nocheatplus.command.removeplayer: true
@@ -377,71 +393,71 @@ permissions:
                     
                     # Left in for compatibility reasons:
                     nocheatplus.admin.notify:
-                        description: DEPRECATED, use nocheatplus.command.notify and/or nocheatplus.notify instead.
+                        description: Obsolete, use nocheatplus.command.notify and/or nocheatplus.notify instead.
                         children:
                             nocheatplus.command.notify: true
                     nocheatplus.admin.reload:
-                        description: DEPRECATED, use nocheatplus.command.reload instead.
+                        description: Obsolete, use nocheatplus.command.reload instead.
                         children:
                             nocheatplus.command.reload: true
                     nocheatplus.admin.info:
-                        description: DEPRECATED, use nocheatplus.command.info instead.
+                        description: Obsolete, use nocheatplus.command.info instead.
                         children:
                             nocheatplus.command.info: true
                     nocheatplus.admin.exemptions:
-                        description: DEPRECATED, use nocheatplus.command.exemptions instead.
+                        description: Obsolete, use nocheatplus.command.exemptions instead.
                         children:
                             nocheatplus.command.exemptions: true
                     nocheatplus.admin.exempt:
-                        description: DEPRECATED, use nocheatplus.command.exempt instead.
+                        description: Obsolete, use nocheatplus.command.exempt instead.
                         children:
                             nocheatplus.command.exempt: true
                     nocheatplus.admin.unexempt:
-                        description: DEPRECATED, use nocheatplus.command.unexempt instead.
+                        description: Obsolete, use nocheatplus.command.unexempt instead.
                         children:
                             nocheatplus.command.unexempt: true
                     nocheatplus.admin.ban:
-                        description: DEPRECATED, use nocheatplus.command.ban instead.
+                        description: Obsolete, use nocheatplus.command.ban instead.
                         children:
                             nocheatplus.command.ban: true
                     nocheatplus.admin.kick:
-                        description: DEPRECATED, use nocheatplus.command.kick instead.
+                        description: Obsolete, use nocheatplus.command.kick instead.
                         children:
                             nocheatplus.command.kick: true
                     nocheatplus.admin.kicklist:
-                        description: DEPRECATED, use nocheatplus.command.kicklist instead.
+                        description: Obsolete, use nocheatplus.command.denylist instead.
                         children:
-                            nocheatplus.command.kicklist: true
+                            nocheatplus.command.denylist: true
                     nocheatplus.admin.lag:
-                        description: DEPRECATED, use nocheatplus.command.lag instead.
+                        description: Obsolete, use nocheatplus.command.lag instead.
                         children:
                             nocheatplus.command.lag: true
                     nocheatplus.admin.tell:
-                        description: DEPRECATED, use nocheatplus.command.tell instead.
+                        description: Obsolete, use nocheatplus.command.tell instead.
                         children:
                             nocheatplus.command.tell: true
                     nocheatplus.admin.delay:
-                        description: DEPRECATED, use nocheatplus.command.delay instead.
+                        description: Obsolete, use nocheatplus.command.delay instead.
                         children:
                             nocheatplus.command.delay: true
                     nocheatplus.admin.tempkick:
-                        description: DEPRECATED, use nocheatplus.command.tempkick instead.
+                        description: Obsolete, use nocheatplus.command.denylogin instead.
                         children:
-                            nocheatplus.command.tempkick: true
+                            nocheatplus.command.denylogin: true
                     nocheatplus.admin.unkick:
-                        description: DEPRECATED, use nocheatplus.command.unkick instead.
+                        description: Obsolete, use nocheatplus.command.allowlogin instead.
                         children:
-                            nocheatplus.command.unkick: true
+                            nocheatplus.command.allowlogin: true
                     nocheatplus.admin.version:
-                        description: DEPRECATED, use nocheatplus.command.version instead.
+                        description: Obsolete, use nocheatplus.command.version instead.
                         children:
                             nocheatplus.command.version: true
                     nocheatplus.admin.removeplayer:
-                        description: DEPRECATED, use nocheatplus.command.removeplayer instead.
+                        description: Obsolete, use nocheatplus.command.removeplayer instead.
                         children:
                             nocheatplus.command.removeplayer: true
                     nocheatplus.admin.commands:
-                        description: DEPRECATED, use nocheatplus.command.commands instead.
+                        description: Obsolete, use nocheatplus.command.commands instead.
                         children:
                             nocheatplus.command.commands: true
             

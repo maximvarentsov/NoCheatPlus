@@ -16,7 +16,7 @@ public class DefaultConfig extends ConfigFile {
 	 * NCP build needed for this config.
 	 * (Should only increment with changing or removing paths.) 
 	 */
-	public static final int buildNumber = 695;
+	public static final int buildNumber = 727;
 	
 	// TODO: auto input full version or null to an extra variable or several [fail safe for other syntax checking]?
 
@@ -355,8 +355,12 @@ public class DefaultConfig extends ConfigFile {
             "log:flyshort:3:5:f cancel vl>100 log:flyshort:0:5:if cancel vl>400 log:flylong:0:5:cif cancel");
 
         set(ConfPaths.MOVING_MOREPACKETS_CHECK, true);
+        set(ConfPaths.MOVING_MOREPACKETS_SECONDS, 6);
         set(ConfPaths.MOVING_MOREPACKETS_EPSIDEAL, 20);
         set(ConfPaths.MOVING_MOREPACKETS_EPSMAX, 22);
+        set(ConfPaths.MOVING_MOREPACKETS_BURST_PACKETS, 40);
+        set(ConfPaths.MOVING_MOREPACKETS_BURST_DIRECT, 60);
+        set(ConfPaths.MOVING_MOREPACKETS_BURST_EPM, 180);
         set(ConfPaths.MOVING_MOREPACKETS_ACTIONS, "cancel vl>10 log:morepackets:0:2:if cancel vl>100 log:morepackets:0:2:if cancel cmd:kickpackets");
 
         set(ConfPaths.MOVING_MOREPACKETSVEHICLE_CHECK, true);
@@ -420,6 +424,18 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.MOVING_SPEEDGRACE, 4.0);
         set(ConfPaths.MOVING_ENFORCELOCATION, true);
         
+        // NET
+        
+        // FlyingFrequency
+        set(ConfPaths.NET_FLYINGFREQUENCY_ACTIVE, true);
+        set(ConfPaths.NET_FLYINGFREQUENCY_SECONDS, 5);
+        set(ConfPaths.NET_FLYINGFREQUENCY_MAXPACKETS, 300);
+        
+        // SoundDistance
+        set(ConfPaths.NET_SOUNDDISTANCE_ACTIVE, true);
+        set(ConfPaths.NET_SOUNDDISTANCE_MAXDISTANCE, 320);
+        
+        
         // TODO: An extra file might suit these.
         final String start = "[player] failed [check]: ";
         final String end = ". VL [violations].";
@@ -476,7 +492,7 @@ public class DefaultConfig extends ConfigFile {
         set(ConfPaths.STRINGS + ".kickselfhit", "ncp kick [player] You tried to hit yourself!");
         set(ConfPaths.STRINGS + ".kickwb", "ncp kick [player] Block breaking out of sync!");
         set(ConfPaths.STRINGS + ".knockback", start + "tried to do a knockback but wasn't technically sprinting" + end);
-        set(ConfPaths.STRINGS + ".morepackets", start + "sent [packets] more packet(s) than expected" + end);
+        set(ConfPaths.STRINGS + ".morepackets", start + "sent too many moves ([packets] [tags])" + end);
         set(ConfPaths.STRINGS + ".munchhausen", start + "almost made it off the pit" + end);
         set(ConfPaths.STRINGS + ".nofall", start + "tried to avoid fall damage" + end);
         set(ConfPaths.STRINGS + ".chatfast", start + "acted like spamming (IP: [ip])" + end);

@@ -76,6 +76,7 @@ import fr.neatmonster.nocheatplus.permissions.Permissions;
 import fr.neatmonster.nocheatplus.players.DataManager;
 import fr.neatmonster.nocheatplus.players.PlayerData;
 import fr.neatmonster.nocheatplus.players.PlayerMessageSender;
+import fr.neatmonster.nocheatplus.stats.Counters;
 import fr.neatmonster.nocheatplus.updates.Updates;
 import fr.neatmonster.nocheatplus.utilities.BlockProperties;
 import fr.neatmonster.nocheatplus.utilities.ColorUtil;
@@ -136,6 +137,9 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 	
 	/** The event listeners. */
     private final List<Listener> listeners       = new ArrayList<Listener>();
+    
+    /** Storage for generic instances registration. */
+    private final Map<Class<?>, Object> genericInstances = new HashMap<Class<?>, Object>();
     
     /** Components that need notification on reloading.
      * (Kept here, for if during runtime some might get added.)*/
@@ -549,6 +553,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 		// Stop consistency checking task.
 		if (consistencyCheckerTaskId != -1){
 			sched.cancelTask(consistencyCheckerTaskId);
+			consistencyCheckerTaskId = -1;
 		}
         
         // Just to be sure nothing gets left out.
@@ -569,6 +574,12 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 				LogUtil.logSevere("DisableListener (" + dl.getClass().getName() + "): " + t.getClass().getSimpleName() + " / " + t.getMessage());
 				LogUtil.logSevere(t);
 			}
+		}
+		
+		// Write some debug/statistics.
+		final Counters counters = getGenericInstance(Counters.class);
+		if (counters != null) {
+			LogUtil.logInfo(counters.getMergedCountsString(true));
 		}
 		
 		// Hooks:
@@ -597,6 +608,8 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 		subRegistries.clear();
 		// Just in case: clear the subComponentHolders.
 		subComponentholders.clear();
+		// Generic instances registry.
+		genericInstances.clear();
 
 		// Clear command changes list (compatibility issues with NPCs, leads to recalculation of perms).
 		if (changedCommands != null){
@@ -682,6 +695,10 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
     	TickTask.purge();
     	TickTask.cancel();
     	TickTask.reset();
+    	
+    	// Register some generic stuff.
+    	// Counters: debugging purposes, maybe integrated for statistics later.
+    	registerGenericInstance(new Counters());
     	
         // Read the configuration files.
         ConfigManager.init(this);
@@ -1150,6 +1167,35 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 		else if (debug){
 			LogUtil.logInfo("[NoCheatPlus] Consistency-checks run.");
 		}
+	}
+
+	@Override
+	public <T> T registerGenericInstance(T instance) {
+		@SuppressWarnings("unchecked")
+		Class<T> clazz = (Class<T>) instance.getClass();
+		T registered = getGenericInstance(clazz);
+		genericInstances.put(clazz,  instance);
+		return registered;
+	}
+
+	@Override
+	public <T, TI extends T> T registerGenericInstance(Class<T> registerFor, TI instance) {
+		T registered = getGenericInstance(registerFor);
+		genericInstances.put(registerFor, instance);
+		return registered;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getGenericInstance(Class<T> registeredFor) {
+		return (T) genericInstances.get(registeredFor);
+	}
+
+	@Override
+	public <T> T unregisterGenericInstance(Class<T> registeredFor) {
+		T registered = getGenericInstance(registeredFor); // Convenience.
+		genericInstances.remove(registeredFor);
+		return registered;
 	}
 
 }
