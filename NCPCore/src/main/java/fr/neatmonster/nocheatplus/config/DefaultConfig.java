@@ -16,7 +16,7 @@ public class DefaultConfig extends ConfigFile {
 	 * NCP build needed for this config.
 	 * (Should only increment with changing or removing paths.) 
 	 */
-	public static final int buildNumber = 727;
+	public static final int buildNumber = 741;
 	
 	// TODO: auto input full version or null to an extra variable or several [fail safe for other syntax checking]?
 
@@ -377,8 +377,7 @@ public class DefaultConfig extends ConfigFile {
         
         set(ConfPaths.MOVING_PASSABLE_CHECK, true);
         set(ConfPaths.MOVING_PASSABLE_RAYTRACING_CHECK, true);
-        set(ConfPaths.MOVING_PASSABLE_RAYTRACING_BLOCKCHANGEONLY, true);
-        set(ConfPaths.MOVING_PASSABLE_RAYTRACING_VCLIPONLY, false);
+        set(ConfPaths.MOVING_PASSABLE_RAYTRACING_BLOCKCHANGEONLY, false);
         set(ConfPaths.MOVING_PASSABLE_ACTIONS, "cancel vl>10 log:passable:0:5:if cancel vl>50 log:passable:0:5:icf cancel");
 
         set(ConfPaths.MOVING_SURVIVALFLY_CHECK, true);
