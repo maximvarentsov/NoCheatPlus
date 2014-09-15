@@ -6,18 +6,6 @@ import java.util.List;
 import org.bukkit.Bukkit;
 
 import fr.neatmonster.nocheatplus.compat.bukkit.MCAccessBukkit;
-import fr.neatmonster.nocheatplus.compat.cb2512.MCAccessCB2512;
-import fr.neatmonster.nocheatplus.compat.cb2545.MCAccessCB2545;
-import fr.neatmonster.nocheatplus.compat.cb2602.MCAccessCB2602;
-import fr.neatmonster.nocheatplus.compat.cb2645.MCAccessCB2645;
-import fr.neatmonster.nocheatplus.compat.cb2691.MCAccessCB2691;
-import fr.neatmonster.nocheatplus.compat.cb2763.MCAccessCB2763;
-import fr.neatmonster.nocheatplus.compat.cb2794.MCAccessCB2794;
-import fr.neatmonster.nocheatplus.compat.cb2808.MCAccessCB2808;
-import fr.neatmonster.nocheatplus.compat.cb2882.MCAccessCB2882;
-import fr.neatmonster.nocheatplus.compat.cb2922.MCAccessCB2922;
-import fr.neatmonster.nocheatplus.compat.cb3026.MCAccessCB3026;
-import fr.neatmonster.nocheatplus.compat.cb3043.MCAccessCB3043;
 import fr.neatmonster.nocheatplus.compat.cbdev.MCAccessCBDev;
 import fr.neatmonster.nocheatplus.config.ConfPaths;
 import fr.neatmonster.nocheatplus.config.ConfigManager;
@@ -64,105 +52,8 @@ public class MCAccessFactory {
 			}
 			catch(Throwable t) {
 				throwables.add(t);
-			};
+			}
 			// TEMP END //
-			
-			// 1.7.8|1.7.9
-			try{
-				return new MCAccessCB3043();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.7.5
-			try{
-				return new MCAccessCB3026();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.7.2
-			try{
-				return new MCAccessCB2922();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.6.4
-			try{
-				return new MCAccessCB2882();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.6.2
-			try{
-				return new MCAccessCB2808();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.6.1
-			try{
-				return new MCAccessCB2794();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-						
-			// 1.5.2
-			try{
-				return new MCAccessCB2763();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.5.1 (cb beta)
-			try{
-				return new MCAccessCB2691();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.5
-			try{
-				return new MCAccessCB2645();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.4.7
-			try{
-				return new MCAccessCB2602();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.4.6
-			try{
-				return new MCAccessCB2545();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
-			// 1.4.5-R1.0
-			try{
-				return new MCAccessCB2512();
-			}
-			catch(Throwable t) {
-				throwables.add(t);
-			};
-			
 		}
 		
 		// Try to set up api-only access (since 1.4.6).

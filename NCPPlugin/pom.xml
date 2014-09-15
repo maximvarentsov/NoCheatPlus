@@ -10,11 +10,11 @@
   <packaging>jar</packaging>
   
   <repositories>
-    <repository>
+    <!--<repository>
 	    <id>bukkit</id>
 	    <name>Bukkit</name>
 	    <url>http://repo.bukkit.org/content/groups/public/</url>
-    </repository>
+    </repository>-->
   </repositories>
   
   <dependencies>
@@ -31,66 +31,6 @@
     <dependency>
     	<groupId>fr.neatmonster</groupId>
     	<artifactId>ncpcompatbukkit</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2512</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2545</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2602</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2645</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2691</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2763</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb2794</artifactId>
-    	<version>static</version>
-    </dependency>
-    <dependency>
-        <groupId>fr.neatmonster</groupId>
-        <artifactId>ncpcompatcb2808</artifactId>
-        <version>static</version>
-    </dependency>
-    <dependency>
-        <groupId>fr.neatmonster</groupId>
-        <artifactId>ncpcompatcb2882</artifactId>
-        <version>static</version>
-    </dependency>
-    <dependency>
-        <groupId>fr.neatmonster</groupId>
-        <artifactId>ncpcompatcb2922</artifactId>
-        <version>static</version>
-    </dependency>
-    <dependency>
-        <groupId>fr.neatmonster</groupId>
-        <artifactId>ncpcompatcb3026</artifactId>
-        <version>static</version>
-    </dependency>
-    <dependency>
-    	<groupId>fr.neatmonster</groupId>
-    	<artifactId>ncpcompatcb3043</artifactId>
     	<version>static</version>
     </dependency>
     <dependency>

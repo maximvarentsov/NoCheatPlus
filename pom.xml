@@ -18,18 +18,6 @@
     <module>NCPCommons</module>
     <module>NCPCore</module>
     <module>NCPCompatBukkit</module>
-    <module>NCPCompatCB2512</module>
-    <module>NCPCompatCB2545</module>
-    <module>NCPCompatCB2602</module>
-    <module>NCPCompatCB2645</module>
-    <module>NCPCompatCB2691</module>
-    <module>NCPCompatCB2763</module>
-    <module>NCPCompatCB2794</module>
-    <module>NCPCompatCB2808</module>
-    <module>NCPCompatCB2882</module>
-    <module>NCPCompatCB2922</module>
-    <module>NCPCompatCB3026</module>
-    <module>NCPCompatCB3043</module>
     <module>NCPCompatCBDev</module>
     <module>NCPCompatProtocolLib</module>
     <module>NCPPlugin</module>
