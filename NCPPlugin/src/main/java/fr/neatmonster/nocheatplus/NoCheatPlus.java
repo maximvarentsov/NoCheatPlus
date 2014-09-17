@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,7 +28,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.Permissible;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -37,14 +35,12 @@ import org.bukkit.scheduler.BukkitScheduler;
 import fr.neatmonster.nocheatplus.checks.blockbreak.BlockBreakListener;
 import fr.neatmonster.nocheatplus.checks.blockinteract.BlockInteractListener;
 import fr.neatmonster.nocheatplus.checks.blockplace.BlockPlaceListener;
-import fr.neatmonster.nocheatplus.checks.chat.ChatListener;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedData;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedListener;
 import fr.neatmonster.nocheatplus.checks.fight.FightListener;
 import fr.neatmonster.nocheatplus.checks.inventory.InventoryListener;
 import fr.neatmonster.nocheatplus.checks.moving.MovingListener;
 import fr.neatmonster.nocheatplus.clients.ModUtil;
-import fr.neatmonster.nocheatplus.command.NoCheatPlusCommand;
 import fr.neatmonster.nocheatplus.compat.DefaultComponentFactory;
 import fr.neatmonster.nocheatplus.compat.MCAccess;
 import fr.neatmonster.nocheatplus.compat.MCAccessFactory;
@@ -71,8 +67,6 @@ import fr.neatmonster.nocheatplus.event.ListenerManager;
 import fr.neatmonster.nocheatplus.hooks.NCPExemptionManager;
 import fr.neatmonster.nocheatplus.logging.LogUtil;
 import fr.neatmonster.nocheatplus.logging.StaticLogFile;
-import fr.neatmonster.nocheatplus.permissions.PermissionUtil;
-import fr.neatmonster.nocheatplus.permissions.PermissionUtil.CommandProtectionEntry;
 import fr.neatmonster.nocheatplus.permissions.Permissions;
 import fr.neatmonster.nocheatplus.players.DataManager;
 import fr.neatmonster.nocheatplus.players.PlayerData;
@@ -80,7 +74,6 @@ import fr.neatmonster.nocheatplus.players.PlayerMessageSender;
 import fr.neatmonster.nocheatplus.stats.Counters;
 import fr.neatmonster.nocheatplus.updates.Updates;
 import fr.neatmonster.nocheatplus.utilities.BlockProperties;
-import fr.neatmonster.nocheatplus.utilities.ColorUtil;
 import fr.neatmonster.nocheatplus.utilities.OnDemandTickListener;
 import fr.neatmonster.nocheatplus.utilities.ReflectionUtil;
 import fr.neatmonster.nocheatplus.utilities.TickTask;
@@ -124,13 +117,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
     protected final DataManager dataMan = new DataManager();
 
     private int dataManTaskId = -1;
-
-    /**
-     * Commands that were changed for protecting them against tab complete or
-     * use.
-     */
-    protected List<CommandProtectionEntry> changedCommands = null;
-
 
     private final ListenerManager listenerManager = new ListenerManager(this, false);
 
@@ -630,11 +616,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         // Generic instances registry.
         genericInstances.clear();
 
-        // Clear command changes list (compatibility issues with NPCs, leads to recalculation of perms).
-        if (changedCommands != null){
-            changedCommands.clear();
-            changedCommands = null;
-        }
         //		// Restore changed commands.
         //		if (verbose) LogUtil.logInfo("[NoCheatPlus] Undo command changes...");
         //		undoCommandChanges();
@@ -659,47 +640,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         LogUtil.logInfo("[NoCheatPlus] Version " + pdfFile.getVersion() + " is disabled.");
     }
 
-    /**
-     * Does not undo 100%, but restore old permission, permission-message, label (unlikely to be changed), permission default.
-     * @deprecated Leads to compatibility issues with NPC plugins such as Citizens 2, due to recalculation of permissions (specifically during disabling).
-     */
-    public void undoCommandChanges() {
-        if (changedCommands != null){
-            while (!changedCommands.isEmpty()){
-                final CommandProtectionEntry entry = changedCommands.remove(changedCommands.size() - 1);
-                entry.restore();
-            }
-            changedCommands = null;
-        }
-    }
-
-    protected void setupCommandProtection() {
-        // TODO: Might re-check with plugins enabling during runtime (!).
-        final List<CommandProtectionEntry> changedCommands = new LinkedList<CommandProtectionEntry>();
-        // Read lists and messages from config.
-        final ConfigFile config = ConfigManager.getConfigFile();
-        // (Might add options to invert selection.)
-        // "No permission".
-        // TODO: Could/should set permission message to null here (server default), might use keyword "default".
-        final List<String> noPerm = config.getStringList(ConfPaths.PROTECT_PLUGINS_HIDE_NOPERMISSION_CMDS);
-        if (noPerm != null && !noPerm.isEmpty()){
-            final String noPermMsg = ColorUtil.replaceColors(ConfigManager.getConfigFile().getString(ConfPaths.PROTECT_PLUGINS_HIDE_NOPERMISSION_MSG));
-            changedCommands.addAll(PermissionUtil.protectCommands(Permissions.FILTER_COMMAND, noPerm,  true, false, noPermMsg));
-        }
-        // "Unknown command", override the other option.
-        final List<String> noCommand = config.getStringList(ConfPaths.PROTECT_PLUGINS_HIDE_NOCOMMAND_CMDS);
-        if (noCommand != null && !noCommand.isEmpty()){
-            final String noCommandMsg = ColorUtil.replaceColors(ConfigManager.getConfigFile().getString(ConfPaths.PROTECT_PLUGINS_HIDE_NOCOMMAND_MSG));
-            changedCommands.addAll(PermissionUtil.protectCommands(Permissions.FILTER_COMMAND, noCommand,  true, false, noCommandMsg));
-        }
-        // Add to changes history for undoing.
-        if (this.changedCommands == null) {
-            this.changedCommands = changedCommands;
-        }
-        else {
-            this.changedCommands.addAll(changedCommands);
-        }
-    }
 
     /* (non-Javadoc)
      * @see org.bukkit.plugin.java.JavaPlugin#onLoad()
@@ -794,7 +734,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
                 new BlockInteractListener(),
                 new BlockBreakListener(),
                 new BlockPlaceListener(),
-                new ChatListener(),
                 new CombinedListener(),
                 // Do mind registration order: Combined must come before Fight.
                 new FightListener(),
@@ -813,12 +752,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             // Register sub-components to enable registries for optional components.
             processQueuedSubComponentHolders();
         }
-
-        // Register the commands handler.
-        final PluginCommand command = getCommand("nocheatplus");
-        final NoCheatPlusCommand commandHandler = new NoCheatPlusCommand(this, notifyReload);
-        command.setExecutor(commandHandler);
-        // (CommandHandler is TabExecutor.)
 
         // Set up the tick task.
         TickTask.start(this);
@@ -851,31 +784,13 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             LogUtil.logWarning("[NoCheatPlus] " + configProblems);
         }
 
-        // Care for already online players.
-        final Player[] onlinePlayers = getServer().getOnlinePlayers();
         // TODO: re-map ExemptionManager !
         // TODO: Disable all checks for these players for one tick ?
         // TODO: Prepare check data for players [problem: permissions]?
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             @Override
             public void run() {
-                postEnable(onlinePlayers,
-                        new Runnable() {
-                    @Override
-                    public void run() {
-                        // Set child permissions for commands for faster checking.
-                        PermissionUtil.addChildPermission(commandHandler.getAllSubCommandPermissions(), Permissions.FILTER_COMMAND_NOCHEATPLUS, PermissionDefault.OP);
-                    }
-                },
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        if (ConfigManager.getConfigFile().getBoolean(ConfPaths.PROTECT_PLUGINS_HIDE_ACTIVE)) {
-                            setupCommandProtection();
-                        }
-                    }
-                }
-                        );
+                postEnable(getServer().getOnlinePlayers());
             }
         });
 
@@ -886,17 +801,9 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
     /**
      * Actions to be done after enable of  all plugins. This aims at reloading mainly.
      */
-    private void postEnable(final Player[] onlinePlayers, Runnable... runnables){
+    private void postEnable(final Player[] onlinePlayers){
         LogUtil.logInfo("[NoCheatPlus] Post-enable running...");
-        for (final Runnable runnable : runnables){
-            try{
-                runnable.run();
-            }
-            catch(Throwable t){
-                LogUtil.logSevere("[NoCheatPlus] Encountered a problem during post-enable: " + t.getClass().getSimpleName());
-                LogUtil.logSevere(t);
-            }
-        }
+
         for (final Player player : onlinePlayers){
             updatePermStateReceivers(player);
             NCPExemptionManager.registerPlayer(player);
@@ -933,11 +840,6 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         initMCAccess(config);
         // Initialize BlockProperties
         initBlockProperties(config);
-        // Reset Command protection.
-        undoCommandChanges();
-        if (config.getBoolean(ConfPaths.PROTECT_PLUGINS_HIDE_ACTIVE)) {
-            setupCommandProtection();
-        }
         // (Re-) schedule consistency checking.
         scheduleConsistencyCheckers();
         // Cache some things.

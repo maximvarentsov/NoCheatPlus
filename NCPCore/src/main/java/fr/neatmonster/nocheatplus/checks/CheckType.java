@@ -10,8 +10,6 @@ import fr.neatmonster.nocheatplus.checks.blockinteract.BlockInteractConfig;
 import fr.neatmonster.nocheatplus.checks.blockinteract.BlockInteractData;
 import fr.neatmonster.nocheatplus.checks.blockplace.BlockPlaceConfig;
 import fr.neatmonster.nocheatplus.checks.blockplace.BlockPlaceData;
-import fr.neatmonster.nocheatplus.checks.chat.ChatConfig;
-import fr.neatmonster.nocheatplus.checks.chat.ChatData;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedConfig;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedData;
 import fr.neatmonster.nocheatplus.checks.fight.FightConfig;
@@ -54,15 +52,6 @@ public enum CheckType {
     BLOCKPLACE_REACH(BLOCKPLACE, Permissions.BLOCKBREAK_REACH),
     BLOCKPLACE_SPEED(BLOCKPLACE, Permissions.BLOCKPLACE_SPEED),
 
-    CHAT(ChatConfig.factory, ChatData.factory, Permissions.CHAT),
-    CHAT_CAPTCHA(CHAT, Permissions.CHAT_CAPTCHA),
-    CHAT_COLOR(CHAT, Permissions.CHAT_COLOR),
-    CHAT_COMMANDS(CHAT, Permissions.CHAT_COMMANDS),
-    CHAT_TEXT(CHAT, Permissions.CHAT_TEXT),
-    CHAT_LOGINS(CHAT, Permissions.CHAT_LOGINS),
-    CHAT_RELOG(CHAT, Permissions.CHAT_RELOG),
-    
-    
     COMBINED(CombinedConfig.factory, CombinedData.factory, Permissions.COMBINED),
     COMBINED_BEDLEAVE(COMBINED, Permissions.COMBINED_BEDLEAVE),
     COMBINED_IMPROBABLE(COMBINED, Permissions.COMBINED_IMPROBABLE),

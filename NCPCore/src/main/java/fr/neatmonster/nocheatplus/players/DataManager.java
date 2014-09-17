@@ -27,7 +27,6 @@ import fr.neatmonster.nocheatplus.checks.access.CheckDataFactory;
 import fr.neatmonster.nocheatplus.checks.blockbreak.BlockBreakConfig;
 import fr.neatmonster.nocheatplus.checks.blockinteract.BlockInteractConfig;
 import fr.neatmonster.nocheatplus.checks.blockplace.BlockPlaceConfig;
-import fr.neatmonster.nocheatplus.checks.chat.ChatConfig;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedConfig;
 import fr.neatmonster.nocheatplus.checks.combined.CombinedData;
 import fr.neatmonster.nocheatplus.checks.fight.FightConfig;
@@ -342,7 +341,6 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 		BlockBreakConfig.clear();
 		BlockInteractConfig.clear();
 		BlockPlaceConfig.clear();
-		ChatConfig.clear();
 		CombinedConfig.clear();
 		FightConfig.clear();
 		InventoryConfig.clear();

@@ -14,39 +14,9 @@ public class Permissions {
     private final static String BYPASS                       = NOCHEATPLUS + ".bypass";
     public static final  String BYPASS_DENY_LOGIN            = BYPASS + "denylogin";
 
-    // Bypass command filter.
-    private static final String FILTER                       = NOCHEATPLUS + ".filter";
-    public static final String  FILTER_COMMAND               = FILTER + ".command";
-    public static final String  FILTER_COMMAND_NOCHEATPLUS   = FILTER_COMMAND + ".nocheatplus";
-
     // Notifications (in-game).
     public static final String  NOTIFY                       = NOCHEATPLUS + ".notify";
 
-    // Command permissions.
-    public static final String  COMMAND                      = NOCHEATPLUS + ".command";
-    public static final String  COMMAND_COMMANDS             = COMMAND + ".commands";
-    public static final String  COMMAND_EXEMPT               = COMMAND + ".exempt";
-    public static final String  COMMAND_EXEMPTIONS           = COMMAND + ".exemptions";
-    public static final String  COMMAND_INFO                 = COMMAND + ".info";
-    public static final String  COMMAND_INSPECT              = COMMAND + ".inspect";
-    public static final String  COMMAND_LAG                  = COMMAND + ".lag";
-    public static final String  COMMAND_LOG                  = COMMAND + ".log";
-    public static final String  COMMAND_NOTIFY               = COMMAND + ".notify";
-    public static final String  COMMAND_RELOAD               = COMMAND + ".reload";
-    public static final String  COMMAND_REMOVEPLAYER         = COMMAND + ".removeplayer";
-    public static final String  COMMAND_RESET                = COMMAND + ".reset";
-    public static final String  COMMAND_TOP                  = COMMAND + ".top";
-    public static final String  COMMAND_UNEXEMPT             = COMMAND + ".unexempt";
-    public static final String  COMMAND_VERSION              = COMMAND + ".version";
-
-    // Auxiliary Command permissions.
-    public static final String  COMMAND_ALLOWLOGIN           = COMMAND + ".allowlogin";
-    public static final String  COMMAND_BAN                  = COMMAND + ".ban";
-    public static final String  COMMAND_DELAY                = COMMAND + ".delay";
-    public static final String  COMMAND_DENYLOGIN            = COMMAND + ".denylogin";
-    public static final String  COMMAND_KICK                 = COMMAND + ".kick";
-    public static final String  COMMAND_KICKLIST             = COMMAND + ".kicklist";
-    public static final String  COMMAND_TELL                 = COMMAND + ".tell";
 
     // Permissions for the individual checks.
     public static final String  CHECKS                       = NOCHEATPLUS + ".checks";
@@ -78,14 +48,6 @@ public class Permissions {
     public static final String  BLOCKPLACE_NOSWING           = BLOCKPLACE + ".noswing";
     public static final String  BLOCKPLACE_REACH             = BLOCKPLACE + ".reach";
     public static final String  BLOCKPLACE_SPEED             = BLOCKPLACE + ".speed";
-
-    public static final String  CHAT                         = CHECKS + ".chat";
-    public static final String  CHAT_CAPTCHA                 = CHAT + ".captcha";
-    public static final String  CHAT_COLOR                   = CHAT + ".color";
-    public static final String  CHAT_COMMANDS                = CHAT + ".commands";
-    public static final String  CHAT_LOGINS                  = CHAT + ".logins";
-    public static final String  CHAT_RELOG                   = CHAT + ".relog";
-    public static final String  CHAT_TEXT                    = CHAT + ".text";
 
     public static final String  COMBINED                     = CHECKS + ".combined";
     public static final String  COMBINED_BEDLEAVE            = COMBINED + ".bedleave";

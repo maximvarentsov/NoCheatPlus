@@ -99,7 +99,7 @@ public class APIUtils {
      * @return true, if successful
      */
     public static final boolean needsSynchronization(final CheckType type) {
-        return type == CheckType.CHAT || isParent(CheckType.CHAT, type);
+        return false;
     }
 
 }
