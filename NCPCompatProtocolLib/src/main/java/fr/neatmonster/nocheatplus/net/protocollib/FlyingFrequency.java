@@ -74,8 +74,11 @@ public class FlyingFrequency extends PacketAdapter implements JoinLeaveListener 
 		final ActionFrequency freq = getFreq(event.getPlayer().getName());
 		freq.add(System.currentTimeMillis(), 1f);
 		if (freq.score(1f) > maxPackets) {
-			event.setCancelled(true);
-			counters.add(idSilent, 1); // Until it is sure if we can get these async.
+			// TODO: Get from a NetConfig (optimized).
+			if (ConfigManager.getConfigFile(event.getPlayer().getWorld().getName()).getBoolean(ConfPaths.NET_FLYINGFREQUENCY_ACTIVE)) {
+				event.setCancelled(true);
+				counters.add(idSilent, 1); // Until it is sure if we can get these async.
+			}
 		}
 	}
 	

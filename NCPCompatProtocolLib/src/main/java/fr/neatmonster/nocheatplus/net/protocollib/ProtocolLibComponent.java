@@ -34,10 +34,8 @@ public class ProtocolLibComponent implements DisableListener, INotifyReload{
 		register(plugin);
 	}
 
-	private void register(Plugin plugin) {	
-		// REgister Classes having a constructor with Plugin as argument.
-		// TODO: Config paths for activation flags ...
-		// TODO: @GlobalConfig simple setup at first.
+	private void register(Plugin plugin) {
+		// Register Classes having a constructor with Plugin as argument.
 		if (ConfigManager.isTrueForAnyConfig(ConfPaths.NET_FLYINGFREQUENCY_ACTIVE)) {
 			register(FlyingFrequency.class, plugin);
 		}
