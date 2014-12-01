@@ -13,12 +13,12 @@ import java.util.List;
  *
  */
 public class StringUtil {
-	
+
 	/** Decimal format for "#.###" */
 	public static final DecimalFormat fdec3 = new DecimalFormat();
 	/** Decimal format for "#.#" */
 	public static final DecimalFormat fdec1 = new DecimalFormat();
-	
+
 	static {
 		// 3 digits.
 		DecimalFormatSymbols sym = fdec3.getDecimalFormatSymbols();
@@ -36,7 +36,7 @@ public class StringUtil {
 
 	/**
 	 * Join parts with link.
-	 * 
+	 *
 	 * @param input
 	 * @param link
 	 * @return
@@ -52,7 +52,7 @@ public class StringUtil {
 		}
 		return builder.toString();
 	}
-	
+
 	/**
 	 * Split input by all characters given (convenience method).
 	 * @param input
@@ -66,14 +66,14 @@ public class StringUtil {
 		for (final char c : chars){
 			String hex = Integer.toHexString((int) c);
 			switch (hex.length()){
-			case 1:
-				hex = "000" + hex;
-				break;
-			case 2:
-				hex = "00" + hex;
-				break;
-			case 3:
-				hex = "0" + hex;
+				case 1:
+					hex = "000" + hex;
+					break;
+				case 2:
+					hex = "00" + hex;
+					break;
+				case 3:
+					hex = "0" + hex;
 			}
 			for (final String s : out){
 				final String[] split = s.split("\\u" + hex);
@@ -91,7 +91,7 @@ public class StringUtil {
 
 	/**
 	 * Return if the two Strings are similar based on the given threshold.
-	 * 
+	 *
 	 * @param s
 	 *            the first String, must not be null
 	 * @param t
@@ -107,10 +107,10 @@ public class StringUtil {
 
 	/**
 	 * Find the Levenshtein distance between two Strings.
-	 * 
+	 *
 	 * This is the number of changes needed to change one String into another,
 	 * where each change is a single character modification (deletion, insertion or substitution).
-	 * 
+	 *
 	 * @param s
 	 *            the first String, must not be null
 	 * @param t
@@ -119,13 +119,13 @@ public class StringUtil {
 	 */
 	public static int levenshteinDistance(CharSequence s, CharSequence t) {
 		if (s == null || t == null) throw new IllegalArgumentException("Strings must not be null");
-	
+
 		int n = s.length();
 		int m = t.length();
-	
+
 		if (n == 0) return m;
 		else if (m == 0) return n;
-	
+
 		if (n > m) {
 			final CharSequence tmp = s;
 			s = t;
@@ -133,36 +133,36 @@ public class StringUtil {
 			n = m;
 			m = t.length();
 		}
-	
+
 		int p[] = new int[n + 1];
 		int d[] = new int[n + 1];
 		int _d[];
-	
+
 		int i;
 		int j;
-	
+
 		char t_j;
-	
+
 		int cost;
-	
+
 		for (i = 0; i <= n; i++)
 			p[i] = i;
-	
+
 		for (j = 1; j <= m; j++) {
 			t_j = t.charAt(j - 1);
 			d[0] = j;
-	
+
 			for (i = 1; i <= n; i++) {
 				cost = s.charAt(i - 1) == t_j ? 0 : 1;
 				d[i] = Math.min(Math.min(d[i - 1] + 1, p[i] + 1), p[i - 1] + cost);
 			}
-	
+
 			_d = p;
 			p = d;
 			d = _d;
 		}
-	
+
 		return p[n];
 	}
-	
+
 }
