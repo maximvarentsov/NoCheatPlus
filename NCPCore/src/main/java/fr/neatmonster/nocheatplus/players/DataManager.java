@@ -61,25 +61,25 @@ import fr.neatmonster.nocheatplus.utilities.StringUtil;
  */
 @SetupOrder(priority = -80)
 public class DataManager implements Listener, INotifyReload, INeedConfig, ComponentRegistry<IRemoveData>, ComponentWithName, ConsistencyChecker, DisableListener{
-	
+
 	protected static DataManager instance = null;
-	
+
 	// Not static
 	private int foundInconsistencies = 0;
-	
+
 	/** PlayerData storage. */
 	protected final Map<String, PlayerData> playerData = new LinkedHashMap<String, PlayerData>(100);
-	
-	/*
-	 * 
-	 */
+
+    /*
+     * 
+     */
 	/**
 	 * Access order for playerName (exact) -> ms time of logout.
 	 * <hr>
 	 * Later this might hold central player data objects instead of the long only.
 	 */
 	private final Map<String, Long> lastLogout = new LinkedHashMap<String, Long>(50, 0.75f, true);
-	
+
 	/**
 	 * Keeping track of online players.<br>
 	 * Mappings:
@@ -87,101 +87,111 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 	 * <li>lower case player name -> Player instance</li>
 	 */
 	protected final Map<String, Player> onlinePlayers = new LinkedHashMap<String, Player>(100);
-	
+
 	/**
 	 * IRemoveData instances.
 	 * // TODO: might use a map for those later (extra or not).
 	 */
 	protected final ArrayList<IRemoveData> iRemoveData = new ArrayList<IRemoveData>();
-	
+
 	/**
 	 * Execution histories of the checks.
 	 */
 	protected final Map<CheckType, Map<String, ExecutionHistory>> executionHistories = new HashMap<CheckType, Map<String,ExecutionHistory>>();
-	
+
 	/** Flag if data expiration is active at all. */
 	protected boolean doExpireData = false;
-	
-	/** 
-	 * Duration in milliseconds for expiration of logged off players data. 
+
+	/**
+	 * Duration in milliseconds for expiration of logged off players data.
 	 * In the config minutes are used as unit.
 	 */
 	protected long durExpireData = 0;
-	
+
 	/** Data and execution history. */
 	protected boolean deleteData = true;
 	/** Violation history and execution history. */
 	protected boolean deleteHistory = false;
-	
+
 	/**
 	 * Sets the static instance reference.
 	 */
-	public DataManager(){
+	public DataManager() {
 		instance = this;
 	}
-	
+
 	/**
 	 * Check the logged out players for if any data can be removed.<br>
 	 * Currently only "dumb" full removal is performed. Later it is thinkable to remove "as much as reasonable".
 	 */
-	public void checkExpiration(){
-		if (!doExpireData || durExpireData <= 0) return;
+	public void checkExpiration() {
+		if (!doExpireData || durExpireData <= 0) {
+			return;
+		}
 		final long now = System.currentTimeMillis();
 		final Set<CheckDataFactory> factories = new LinkedHashSet<CheckDataFactory>();
 		final Set<Entry<String, Long>> entries = lastLogout.entrySet();
 		final Iterator<Entry<String, Long>> iterator = entries.iterator();
-		while (iterator.hasNext()){
+		while (iterator.hasNext()) {
 			final Entry<String, Long> entry = iterator.next();
 			final long ts = entry.getValue();
-			if (now - ts <= durExpireData) break;
+			if (now - ts <= durExpireData) {
+				break;
+			}
 			final String playerName = entry.getKey();
-			if (deleteData){
+			if (deleteData) {
 				factories.clear();
-				for (final CheckType type : CheckType.values()){
+				for (final CheckType type : CheckType.values()) {
 					final CheckDataFactory factory = type.getDataFactory();
-					if (factory != null) factories.add(factory);
+					if (factory != null) {
+						factories.add(factory);
+					}
 				}
-				for (final CheckDataFactory factory : factories){
+				for (final CheckDataFactory factory : factories) {
 					factory.removeData(playerName);
 				}
 				clearComponentData(CheckType.ALL, playerName);
 				playerData.remove(playerName.toLowerCase()); // TODO
 			}
-			if (deleteData || deleteHistory) removeExecutionHistory(CheckType.ALL, playerName);
-			if (deleteHistory) ViolationHistory.removeHistory(playerName);
+			if (deleteData || deleteHistory) {
+				removeExecutionHistory(CheckType.ALL, playerName);
+			}
+			if (deleteHistory) {
+				ViolationHistory.removeHistory(playerName);
+			}
 			iterator.remove();
 		}
 	}
-	
+
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onPlayerJoin(final PlayerJoinEvent event){
-	    final Player player = event.getPlayer();
+	public void onPlayerJoin(final PlayerJoinEvent event) {
+		final Player player = event.getPlayer();
 		lastLogout.remove(player.getName());
-		CombinedData.getData(player).lastJoinTime = System.currentTimeMillis(); 
+		CombinedData.getData(player).lastJoinTime = System.currentTimeMillis();
 		addOnlinePlayer(player);
 	}
-	
+
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerQuit(final PlayerQuitEvent event){
-	    onLeave(event.getPlayer());
+	public void onPlayerQuit(final PlayerQuitEvent event) {
+		onLeave(event.getPlayer());
 	}
-	
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerKick(final PlayerKickEvent event){
-        onLeave(event.getPlayer());
-    }
-	
-    /**
-     * Quit or kick.
-     * @param player
-     */
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerKick(final PlayerKickEvent event) {
+		onLeave(event.getPlayer());
+	}
+
+	/**
+	 * Quit or kick.
+	 * @param player
+	 */
 	private final void onLeave(final Player player) {
-	    final long now = System.currentTimeMillis();
-        lastLogout.put(player.getName(), now);
-        CombinedData.getData(player).lastLogoutTime = now;
-        removeOnlinePlayer(player);
-    }
-	
+		final long now = System.currentTimeMillis();
+		lastLogout.put(player.getName(), now);
+		CombinedData.getData(player).lastLogoutTime = now;
+		removeOnlinePlayer(player);
+	}
+
 	@Override
 	public void onReload() {
 		// present.
@@ -208,41 +218,45 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 	public static void registerExecutionHistory(CheckType type, Map<String, ExecutionHistory> histories) {
 		instance.executionHistories.put(type, histories);
 	}
-	
+
 	/**
 	 * Access method to the the execution history for check type for a player.
 	 * @param type
 	 * @param playerName Exact case for player name.
 	 * @return null if not present.
 	 */
-	public static ExecutionHistory getExecutionHistory(final CheckType type, final String playerName){
-	    final Map<String, ExecutionHistory> map = instance.executionHistories.get(type);
-        if (map != null) return map.get(playerName);
-        return null;
+	public static ExecutionHistory getExecutionHistory(final CheckType type, final String playerName) {
+		final Map<String, ExecutionHistory> map = instance.executionHistories.get(type);
+		if (map != null) {
+			return map.get(playerName);
+		}
+		return null;
 	}
-	
+
 	/**
 	 * Remove the execution history for a player for the given check type.
 	 * @param type
 	 * @param playerName
 	 * @return
 	 */
-	public static boolean removeExecutionHistory(final CheckType type, final String playerName){
+	public static boolean removeExecutionHistory(final CheckType type, final String playerName) {
 		boolean removed = false;
 		// TODO: design ...
-		for (final CheckType refType : APIUtils.getWithChildren(type)){
+		for (final CheckType refType : APIUtils.getWithChildren(type)) {
 			final Map<String, ExecutionHistory> map = instance.executionHistories.get(refType);
-			if (map != null && map.remove(playerName) != null) removed = true;
+			if (map != null && map.remove(playerName) != null) {
+				removed = true;
+			}
 		}
 		return removed;
 	}
-	
+
 	/**
 	 * Removes all data and history for a player.
 	 * @deprecated Use clearData instead, this likely to be removed later.
 	 * @param checkType
 	 */
-	public static void clear(final CheckType checkType){
+	public static void clear(final CheckType checkType) {
 		clearData(checkType);
 	}
 
@@ -252,86 +266,104 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 	 */
 	public static void clearData(final CheckType checkType) {
 		final Set<CheckDataFactory> factories = new HashSet<CheckDataFactory>();
-		for (final CheckType type : APIUtils.getWithChildren(checkType)){
+		for (final CheckType type : APIUtils.getWithChildren(checkType)) {
 			final Map<String, ExecutionHistory> map = instance.executionHistories.get(type);
-			if (map != null) map.clear();
+			if (map != null) {
+				map.clear();
+			}
 			final CheckDataFactory factory = type.getDataFactory();
-			if (factory != null) factories.add(factory);
+			if (factory != null) {
+				factories.add(factory);
+			}
 		}
-		for (final CheckDataFactory factory : factories){
+		for (final CheckDataFactory factory : factories) {
 			factory.removeAllData();
 		}
-		for (final IRemoveData rmd : instance.iRemoveData){
-			if (checkType == CheckType.ALL){
+		for (final IRemoveData rmd : instance.iRemoveData) {
+			if (checkType == CheckType.ALL) {
 				// Not sure this is really good, though.
 				rmd.removeAllData();
 			}
-			else if (rmd instanceof IHaveCheckType){
+			else if (rmd instanceof IHaveCheckType) {
 				final CheckType refType = ((IHaveCheckType) rmd).getCheckType();
-				if (refType == checkType || APIUtils.isParent(checkType, refType)) rmd.removeAllData();
+				if (refType == checkType || APIUtils.isParent(checkType, refType)) {
+					rmd.removeAllData();
+				}
 			}
 		}
 		ViolationHistory.clear(checkType);
-		if (checkType == CheckType.ALL){
+		if (checkType == CheckType.ALL) {
 			instance.playerData.clear(); // TODO
 		}
 	}
-	
-    /**
-     * Remove the player data for a given player and a given check type. CheckType.ALL and null will be interpreted as removing all data.<br>
-     * @param playerName Exact player name.
-     * @param checkType Check type to remove data for, null is regarded as ALL.
-     * @return If any data was present.
-     */
+
+	/**
+	 * Remove the player data for a given player and a given check type. CheckType.ALL and null will be interpreted as removing all data.<br>
+	 * @param playerName Exact player name.
+	 * @param checkType Check type to remove data for, null is regarded as ALL.
+	 * @return If any data was present.
+	 */
 	public static boolean removeData(final String playerName, CheckType checkType) {
-		if (checkType == null) checkType = CheckType.ALL;
+		if (checkType == null) {
+			checkType = CheckType.ALL;
+		}
 		boolean had = false;
-		
+
 		// Check extended registered components.
-		if (clearComponentData(checkType, playerName)) had = true;
-		
+		if (clearComponentData(checkType, playerName)) {
+			had = true;
+		}
+
 		// Collect factories.
 		final Set<CheckDataFactory> factories = new HashSet<CheckDataFactory>();
-		for (CheckType otherType : APIUtils.getWithChildren(checkType)){
+		for (CheckType otherType : APIUtils.getWithChildren(checkType)) {
 			final CheckDataFactory otherFactory = otherType.getDataFactory();
-			if (otherFactory != null) factories.add(otherFactory);
+			if (otherFactory != null) {
+				factories.add(otherFactory);
+			}
 		}
 		// Remove data.
-		for (final CheckDataFactory otherFactory : factories){
-			if (otherFactory.removeData(playerName) != null) had = true;
+		for (final CheckDataFactory otherFactory : factories) {
+			if (otherFactory.removeData(playerName) != null) {
+				had = true;
+			}
 		}
-		
-		if (checkType == CheckType.ALL){
+
+		if (checkType == CheckType.ALL) {
 			instance.playerData.remove(playerName.toLowerCase());
 		}
-		
+
 		return had;
 	}
-	
+
 	/**
 	 * Clear player related data, only for registered components (not execution history, violation history, normal check data).<br>
 	 * That should at least go for chat engine data.
-	 * @param CheckType
+	 * @param checkType
 	 * @param PlayerName
 	 * @return If something was removed.
 	 */
-	public static boolean clearComponentData(final CheckType checkType, final String PlayerName){
+	public static boolean clearComponentData(final CheckType checkType, final String PlayerName) {
 		boolean removed = false;
-		for (final IRemoveData rmd : instance.iRemoveData){
-			if (checkType == CheckType.ALL){
+		for (final IRemoveData rmd : instance.iRemoveData) {
+			if (checkType == CheckType.ALL) {
 				// Not sure this is really good, though.
-				if (rmd.removeData(PlayerName) != null) removed = true;
+				if (rmd.removeData(PlayerName) != null) {
+					removed = true;
+				}
 			}
-			else if (rmd instanceof IHaveCheckType){
+			else if (rmd instanceof IHaveCheckType) {
 				final CheckType refType = ((IHaveCheckType) rmd).getCheckType();
-				if (refType == checkType || APIUtils.isParent(checkType, refType)){
-					if (rmd.removeData(PlayerName) != null) removed = true;
+				if (refType == checkType || APIUtils.isParent(checkType, refType)) {
+					if (rmd.removeData(PlayerName) != null) {
+						removed = true;
+					}
 				}
 			}
 		}
 		return removed;
 	}
-	
+
 	/**
 	 * Clear all stored (check) config instances.<br>
 	 * This does not cleanup ConfigManager, i.e. stored yml-versions.
@@ -346,31 +378,31 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 		InventoryConfig.clear();
 		MovingConfig.clear();
 	}
-	
+
 	/**
 	 * This gets an online player by exact player name or lower-case player name only [subject to change].
 	 * @param playerName
 	 * @return
 	 */
-	public static Player getPlayerExact(final String playerName){
+	public static Player getPlayerExact(final String playerName) {
 		return instance.onlinePlayers.get(playerName);
 	}
-	
+
 	/**
 	 * This gets the online player with the exact name, but transforms the input to lower case.
 	 * @param playerName
 	 * @return
 	 */
-	public static Player getPlayer(final String playerName){
+	public static Player getPlayer(final String playerName) {
 		return instance.onlinePlayers.get(playerName.toLowerCase());
 	}
-	
+
 	@Override
 	public boolean addComponent(IRemoveData obj) {
-		if (iRemoveData.contains(obj)){
+		if (iRemoveData.contains(obj)) {
 			return false;
 		}
-		else{
+		else {
 			iRemoveData.add((IRemoveData) obj);
 			return true;
 		}
@@ -380,37 +412,36 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 	public void removeComponent(IRemoveData obj) {
 		iRemoveData.remove((IRemoveData) obj);
 	}
-	
+
 	/**
 	 * Initializing with online players.
 	 */
-	public void onEnable(){
-		final Player[] players = Bukkit.getOnlinePlayers();
-		for (final Player player : players){
+	public void onEnable() {
+		for (final Player player : Bukkit.getOnlinePlayers()) {
 			addOnlinePlayer(player);
 		}
 	}
-	
+
 	/**
 	 * Add mappings for player names variations.
 	 * @param player
 	 */
-	private void addOnlinePlayer(final Player player){
+	private void addOnlinePlayer(final Player player) {
 		final String name = player.getName();
 		onlinePlayers.put(name, player);
 		onlinePlayers.put(name.toLowerCase(), player);
 	}
-	
+
 	/**
 	 * Remove mappings for player names variations.
 	 * @param player
 	 */
-	private void removeOnlinePlayer(final Player player){
+	private void removeOnlinePlayer(final Player player) {
 		final String name = player.getName();
 		onlinePlayers.remove(name);
-		onlinePlayers.remove(name.toLowerCase()); 
+		onlinePlayers.remove(name.toLowerCase());
 	}
-	
+
 	/**
 	 * Cleanup method, removes all data and config, but does not call ConfigManager.cleanup.
 	 */
@@ -423,10 +454,10 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 		executionHistories.clear();
 		onlinePlayers.clear();
 		// Finally alert (summary) if inconsistencies found.
-		if (foundInconsistencies > 0){
+		if (foundInconsistencies > 0) {
 			LogUtil.logWarning("[NoCheatPlus] DataMan found " + foundInconsistencies + " inconsistencies (warnings suppressed).");
 			foundInconsistencies = 0;
- 		}
+		}
 	}
 
 	@Override
@@ -440,46 +471,46 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 		int missing = 0;
 		int changed = 0;
 		int expectedSize = 0;
-		for (int i = 0; i < onlinePlayers.length; i++){
+		for (int i = 0; i < onlinePlayers.length; i++) {
 			final Player player = onlinePlayers[i];
 			final String name = player.getName();
-//			if (player.isOnline()){
-				expectedSize += 1 + (name.equals(name.toLowerCase()) ? 0 : 1);
-				if (!this.onlinePlayers.containsKey(name)){
-					missing ++;
-					// TODO: Add the player [problem: messy NPC plugins?]?
-				}
-				if (player != this.onlinePlayers.get(name)){
-					changed ++;
-					// Update the reference.
-					addOnlinePlayer(player);
-//				}
+			//			if (player.isOnline()) {
+			expectedSize += 1 + (name.equals(name.toLowerCase()) ? 0 : 1);
+			if (!this.onlinePlayers.containsKey(name)) {
+				missing ++;
+				// TODO: Add the player [problem: messy NPC plugins?]?
+			}
+			if (player != this.onlinePlayers.get(name)) {
+				changed ++;
+				// Update the reference.
+				addOnlinePlayer(player);
+				//				}
 			}
 		}
-		
+
 		// TODO: Consider checking lastLogout for too long gone players.
-		
+
 		final int storedSize = this.onlinePlayers.size();
-		if (missing != 0 || changed != 0 || expectedSize != storedSize){
+		if (missing != 0 || changed != 0 || expectedSize != storedSize) {
 			foundInconsistencies ++;
-			if (!ConfigManager.getConfigFile().getBoolean(ConfPaths.DATA_CONSISTENCYCHECKS_SUPPRESSWARNINGS)){
+			if (!ConfigManager.getConfigFile().getBoolean(ConfPaths.DATA_CONSISTENCYCHECKS_SUPPRESSWARNINGS)) {
 				final List<String> details = new LinkedList<String>();
-				if (missing != 0){
+				if (missing != 0) {
 					details.add("missing online players (" + missing + ")");
 				}
-				if (expectedSize != storedSize){
+				if (expectedSize != storedSize) {
 					// TODO: Consider checking for not online players and remove them.
 					details.add("wrong number of online players (" + storedSize + " instead of " + expectedSize + ")");
 				}
-				if (changed != 0){
+				if (changed != 0) {
 					details.add("changed player instances (" + changed + ")");
 				}
-				
+
 				LogUtil.logWarning("[NoCheatPlus] DataMan inconsistencies: " + StringUtil.join(details, " | "));
 			}
 		}
 	}
-	
+
 	/**
 	 * Convenience method, also hiding how player data is stored for a Player instance - always creates a PlayerData instance, if not already present.
 	 * @param player
@@ -488,25 +519,27 @@ public class DataManager implements Listener, INotifyReload, INeedConfig, Compon
 	public static PlayerData getPlayerData(final Player player) {
 		return getPlayerData(player.getName(), true);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param playerName
 	 * @param create
 	 * @return
 	 */
-	public static PlayerData getPlayerData(final String playerName, final boolean create){
+	public static PlayerData getPlayerData(final String playerName, final boolean create) {
 		final String lcName = playerName.toLowerCase(); // TODO: Store by both lower case and exact case (also store the Player reference).
 		final PlayerData data = instance.playerData.get(lcName);
-		if (data != null) return data;
-		else if (!create){
+		if (data != null) {
+			return data;
+		}
+		else if (!create) {
 			return null;
 		}
-		else{
+		else {
 			final PlayerData newData = new PlayerData(lcName);
 			instance.playerData.put(lcName, newData);
 			return newData;
 		}
 	}
-	
+
 }
