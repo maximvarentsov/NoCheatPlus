@@ -1,5 +1,7 @@
 package fr.neatmonster.nocheatplus.logging;
 
+import fr.neatmonster.nocheatplus.utilities.StringUtil;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -58,9 +60,7 @@ public class StaticLogFile {
 			builder.append('\n');
 
 			if (ex != null) {
-				final StringWriter writer = new StringWriter();
-				ex.printStackTrace(new PrintWriter(writer));
-				builder.append(writer);
+				builder.append(StringUtil.throwableToString(ex));
 			}
 
 			return builder.toString();
