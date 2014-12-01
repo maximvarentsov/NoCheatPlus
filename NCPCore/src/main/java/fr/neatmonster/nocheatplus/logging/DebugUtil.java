@@ -11,6 +11,7 @@ import fr.neatmonster.nocheatplus.utilities.BlockProperties;
 import fr.neatmonster.nocheatplus.utilities.PlayerLocation;
 import fr.neatmonster.nocheatplus.utilities.StringUtil;
 import fr.neatmonster.nocheatplus.utilities.build.BuildParameters;
+import org.bukkit.util.Vector;
 
 /**
  * Some auxiliary static-access methods.
@@ -198,11 +199,15 @@ public class DebugUtil {
 			final double jump = mcAccess.getJumpAmplifier(player);
 			final double speed = mcAccess.getFasterMovementAmplifier(player);
 			if (BuildParameters.debugLevel > 0){
-				try{
+				try {
 					// TODO: Check backwards compatibility (1.4.2). Remove try-catch
 					builder.append("\n(walkspeed=" + player.getWalkSpeed() + " flyspeed=" + player.getFlySpeed() + ")");
-				} catch (Throwable t){}
-				if (player.isSprinting()){
+				} catch (Throwable ignore) {
+
+				}
+				final Vector v = player.getVelocity();
+				builder.append("(svel=" + v.getX() + "," + v.getY() + "," + v.getZ() + ")");
+				if (player.isSprinting()) {
 					builder.append("(sprinting)");
 				}
 				if (player.isSneaking()){
