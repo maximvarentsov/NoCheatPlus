@@ -13,7 +13,7 @@ import fr.neatmonster.nocheatplus.utilities.PlayerLocation;
 import fr.neatmonster.nocheatplus.utilities.TrigUtil;
 
 public class Passable extends Check {
-	
+
 	private final PassableRayTracing rayTracing = new PassableRayTracing();
 
 	public Passable() {
@@ -30,16 +30,16 @@ public class Passable extends Check {
 		final int manhattan = from.manhattan(to);
 		// Skip moves inside of ignored blocks right away [works as long as we only check between foot-locations].
 		if (manhattan <= 1 && BlockProperties.isPassable(from.getTypeId())) {
-		    // TODO: Monitor: BlockProperties.isPassable checks slightly different than before.
-		    if (manhattan == 0){
-		        return null;
-		    } else {
-		        // manhattan == 1
-		        if (BlockProperties.isPassable(to.getTypeId())) {
-		            return null;
-		        }
-		    }
-		} 
+			// TODO: Monitor: BlockProperties.isPassable checks slightly different than before.
+			if (manhattan == 0){
+				return null;
+			} else {
+				// manhattan == 1
+				if (BlockProperties.isPassable(to.getTypeId())) {
+					return null;
+				}
+			}
+		}
 		boolean toPassable = to.isPassable();
 		// General condition check for using ray-tracing.
 		if (toPassable && cc.passableRayTracingCheck && (!cc.passableRayTracingBlockChangeOnly || manhattan > 0)) {
@@ -67,7 +67,7 @@ public class Passable extends Check {
 			// TODO: Future: If accuracy is demanded, also check the head position (or bounding box right away).
 			rayTracing.cleanup();
 		}
-		
+
 		// TODO: Checking order: If loc is not the same as from, a quick return here might not be wanted.
 		if (toPassable) {
 			// Quick return.
@@ -77,9 +77,9 @@ public class Passable extends Check {
 		} else {
 			return potentialViolation(player, loc, from, to, manhattan, tags, data, cc);
 		}
-		
+
 	}
-	
+
 	private Location potentialViolation(final Player player, Location loc, final PlayerLocation from, final PlayerLocation to, final int manhattan, String tags, final MovingData data, final MovingConfig cc) {
 		// Moving into a block, possibly a violation.
 
@@ -103,20 +103,20 @@ public class Passable extends Check {
 			loc = null;
 			tags += "into";
 		} else if (BlockProperties.isPassable(from.getBlockCache(), loc.getX(), loc.getY(), loc.getZ(), from.getTypeId(lbX, lbY, lbZ))) {
-		    // Keep loc, because it it is passable.
+			// Keep loc, because it it is passable.
 			tags += "into_shift";
 		}
-//				} else if (BlockProperties.isPassableExact(from.getBlockCache(), loc.getX(), loc.getY(), loc.getZ(), from.getTypeId(lbX, lbY, lbZ))) {
-			// (Mind that this can be the case on the same block theoretically.)
-			// Keep loc as set-back.
-//				}
+		//				} else if (BlockProperties.isPassableExact(from.getBlockCache(), loc.getX(), loc.getY(), loc.getZ(), from.getTypeId(lbX, lbY, lbZ))) {
+		// (Mind that this can be the case on the same block theoretically.)
+		// Keep loc as set-back.
+		//				}
 		else if (!from.isSameBlock(lbX, lbY, lbZ)) {
 			// Both loc and from are not passable. Use from as set.back (earliest).
 			tags += "cross_shift";
 			loc = null;
 		}
 		else if (manhattan == 1 && to.isBlockAbove(from) && BlockProperties.isPassable(from.getBlockCache(), from.getX(), from.getY() + player.getEyeHeight(), from.getZ(), from.getTypeId(from.getBlockX(), Location.locToBlock(from.getY() + player.getEyeHeight()), from.getBlockZ()))) {
-//				else if (to.isBlockAbove(from) && BlockProperties.isPassableExact(from.getBlockCache(), from.getX(), from.getY() + player.getEyeHeight(), from.getZ(), from.getTypeId(from.getBlockX(), Location.locToBlock(from.getY() + player.getEyeHeight()), from.getBlockZ()))) {
+			//				else if (to.isBlockAbove(from) && BlockProperties.isPassableExact(from.getBlockCache(), from.getX(), from.getY() + player.getEyeHeight(), from.getZ(), from.getTypeId(from.getBlockX(), Location.locToBlock(from.getY() + player.getEyeHeight()), from.getBlockZ()))) {
 			// Allow the move up if the head is free.
 			// TODO: Better distinguish ray-tracing (through something thin) or check to-head-passable too?
 			return null;
@@ -130,19 +130,19 @@ public class Passable extends Check {
 			// All blocks are the same, allow the move.
 			return null;
 		}
-		
+
 		// Discard inconsistent locations.
 		// TODO: Might get rid of using the in-between loc - needs use-case checking.
 		if (loc != null && (TrigUtil.distance(from,  to) > 0.75 || TrigUtil.distance(from, loc) > 0.125)) {
 			loc = null;
 		}
-		
+
 		// Prefer the set-back location from the data.
 		if (data.hasSetBack()) {
 			// TODO: Review or make configurable.
 			final Location ref = data.getSetBack(to);
 			if (BlockProperties.isPassable(from.getBlockCache(), ref) || loc == null || TrigUtil.distance(from, loc) > 0.13) {
-//					if (BlockProperties.isPassableExact(from.getBlockCache(), ref)) {
+				//					if (BlockProperties.isPassableExact(from.getBlockCache(), ref)) {
 				loc = ref;
 				if (cc.debug) {
 					System.out.println(player.getName() + " Using set-back location for passable.");
@@ -153,7 +153,7 @@ public class Passable extends Check {
 		}
 
 		// TODO: set data.set-back ? or something: still some aji here.
-		
+
 		// Return the reset position.
 		data.passableVL += 1d;
 		final ViolationData vd = new ViolationData(this, player, data.passableVL, 1, cc.passableActions);
@@ -184,7 +184,7 @@ public class Passable extends Check {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Test collision with ignoring the first block.
 	 * @param from
