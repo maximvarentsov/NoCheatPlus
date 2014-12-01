@@ -89,12 +89,12 @@ public class LogAction extends ActionWithParameters<ViolationData, ActionList> {
 
 
 	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * fr.neatmonster.nocheatplus.actions.Action#execute(fr.neatmonster.nocheatplus
-	 * .checks.ViolationData)
-	 */
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.neatmonster.nocheatplus.actions.Action#execute(fr.neatmonster.nocheatplus
+     * .checks.ViolationData)
+     */
 	@Override
 	public boolean execute(final ViolationData violationData) {
 		if (!violationData.player.hasPermission(violationData.getPermissionSilent())) {
