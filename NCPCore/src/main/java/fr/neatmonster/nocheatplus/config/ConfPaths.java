@@ -29,6 +29,7 @@ public abstract class ConfPaths {
     private static final String LOGGING                                  = "logging.";
     public static final String  LOGGING_ACTIVE                           = LOGGING + "active";
     public static final String  LOGGING_DEBUG                            = LOGGING + "debug";
+	public static final String  LOGGING_MAXQUEUESIZE                     = LOGGING + "maxqueuesize";
     
     private static final String LOGGING_BACKEND							 = LOGGING + "backend.";
     private static final String LOGGING_BACKEND_CONSOLE					 = LOGGING_BACKEND + "console.";
@@ -211,7 +212,6 @@ public abstract class ConfPaths {
     public static final String  BLOCKPLACE_SPEED_CHECK                   = BLOCKPLACE_SPEED + "active";
     public static final String  BLOCKPLACE_SPEED_INTERVAL                = BLOCKPLACE_SPEED + "interval";
     public static final String  BLOCKPLACE_SPEED_ACTIONS                 = BLOCKPLACE_SPEED + "actions";
-    public static final String  LOGGING_MAXQUEUESIZE                     = "5000";
     /*
      * Combined !
      */

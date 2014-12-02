@@ -1,5 +1,6 @@
 package fr.neatmonster.nocheatplus.checks.blockbreak;
 
+import fr.neatmonster.nocheatplus.logging.LogManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -172,7 +173,7 @@ public class BlockBreakListener extends CheckListener {
             priority = EventPriority.MONITOR)
     public void onPlayerAnimation(final PlayerAnimationEvent event) {
         // Just set a flag to true when the arm was swung.
-//    	System.out.println("Animation");
+//        NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(LogManager.TRACE_FILE, "Animation");
         BlockBreakData.getData(event.getPlayer()).noSwingArmSwung = true;
     }
 
@@ -183,10 +184,9 @@ public class BlockBreakListener extends CheckListener {
      * @param event
      *            the event
      */
-    @EventHandler(
-            ignoreCancelled = false, priority = EventPriority.LOWEST)
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
     public void onPlayerInteract(final PlayerInteractEvent event) {
-//    	System.out.println("Interact("+event.isCancelled()+"): " + event.getClickedBlock());
+//    	NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(LogManager.TRACE_FILE, "Interact("+event.isCancelled()+"): " + event.getClickedBlock());
     	// The following is to set the "first damage time" for a block.
     	
     	// Return if it is not left clicking a block. 

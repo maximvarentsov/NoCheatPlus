@@ -1,6 +1,5 @@
 package fr.neatmonster.nocheatplus;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import fr.neatmonster.nocheatplus.logging.LogManager;
+import fr.neatmonster.nocheatplus.logging.Streams;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -66,7 +67,6 @@ import fr.neatmonster.nocheatplus.event.IHaveMethodOrder;
 import fr.neatmonster.nocheatplus.event.ListenerManager;
 import fr.neatmonster.nocheatplus.hooks.NCPExemptionManager;
 import fr.neatmonster.nocheatplus.logging.StaticLog;
-import fr.neatmonster.nocheatplus.logging.StaticLogFile;
 import fr.neatmonster.nocheatplus.permissions.Permissions;
 import fr.neatmonster.nocheatplus.players.DataManager;
 import fr.neatmonster.nocheatplus.players.PlayerData;
@@ -97,6 +97,9 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
     }
 
     // Not static.
+
+    /** Central logging access point. */
+    private LogManager logManager = null; // Not final, but intended to stay, once set [change to init=syso?].
 
     /** Names of players with a certain permission. */
     protected final NameSetPermState nameSetPerms = new NameSetPermState(Permissions.NOTIFY);
@@ -240,6 +243,11 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         final Long oldTs = denyLoginNames.get(playerName);
         if (oldTs == null) return false; 
         else return time < oldTs.longValue();
+    }
+
+    @Override
+    public LogManager getLogManager() {
+        return logManager;
     }
 
     @Override
@@ -455,7 +463,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             if (listener instanceof IHaveMethodOrder){
                 // TODO: Might log the order too, might prevent registration ?
                 // TODO: Alternative: queue listeners and register after startup (!)
-                StaticLog.logWarning("[NoCheatPlus] Listener demands registration order, but listeners are not managed: " + listener.getClass().getName());
+                logManager.warning(Streams.INIT, "[NoCheatPlus] Listener demands registration order, but listeners are not managed: " + listener.getClass().getName());
             }
         }
     }
@@ -516,10 +524,10 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         // Remove listener references.
         if (verbose){
             if (listenerManager.hasListenerMethods()) {
-                StaticLog.logInfo("[NoCheatPlus] Cleanup ListenerManager...");
+                logManager.info(Streams.INIT, "[NoCheatPlus] Cleanup ListenerManager...");
             }
             else {
-                StaticLog.logInfo("[NoCheatPlus] (ListenerManager not in use, prevent registering...)");
+                logManager.info(Streams.INIT, "[NoCheatPlus] (ListenerManager not in use, prevent registering...)");
             }
         }
         listenerManager.setRegisterDirectly(false);
@@ -535,7 +543,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Stop the tickTask.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Stop TickTask...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Stop TickTask...");
         }
         TickTask.setLocked(true);
         TickTask.purge();
@@ -551,34 +559,34 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Just to be sure nothing gets left out.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Stop all remaining tasks...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Stop all remaining tasks...");
         }
         sched.cancelTasks(this);
 
         // Exemptions cleanup.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Reset ExemptionManager...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Reset ExemptionManager...");
         }
         NCPExemptionManager.clear();
 
         // Data cleanup.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] onDisable calls (include DataManager cleanup)...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] onDisable calls (include DataManager cleanup)...");
         }
         for (final DisableListener dl : disableListeners) {
             try {
                 dl.onDisable();
             } catch (Throwable t) {
                 // bad :)
-                StaticLog.logSevere("DisableListener (" + dl.getClass().getName() + "): " + t.getClass().getSimpleName() + " / " + t.getMessage());
-                StaticLog.logSevere(t);
+                logManager.severe(Streams.INIT, "DisableListener (" + dl.getClass().getName() + "): " + t.getClass().getSimpleName() + " / " + t.getMessage());
+                logManager.severe(Streams.INIT, t);
             }
         }
 
         // Write some debug/statistics.
         final Counters counters = getGenericInstance(Counters.class);
         if (verbose && counters != null) {
-            StaticLog.logInfo(counters.getMergedCountsString(true));
+            logManager.info(Streams.INIT, counters.getMergedCountsString(true));
         }
 
         // Hooks:
@@ -587,7 +595,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Unregister all added components explicitly.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Unregister all registered components...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Unregister all registered components...");
         }
         final ArrayList<Object> allComponents = new ArrayList<Object>(this.allComponents);
         for (int i = allComponents.size() - 1; i >= 0; i--){
@@ -596,12 +604,12 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Cleanup BlockProperties.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Cleanup BlockProperties...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Cleanup BlockProperties...");
         }
         BlockProperties.cleanup();
 
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Cleanup some mappings...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Cleanup some mappings...");
         }
         // Remove listeners.
         listeners.clear();
@@ -622,7 +630,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Cleanup the configuration manager.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Cleanup ConfigManager...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Cleanup ConfigManager...");
         }
         ConfigManager.cleanup();
 
@@ -630,14 +638,15 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         if (verbose) {
             StaticLog.logInfo("[NoCheatPlus] Cleanup file logger...");
         }
-        StaticLogFile.cleanup();
+        StaticLog.setUseBukkitLogger(false);
+        logManager.shutdown();
 
         // Tell the server administrator the we finished unloading NoCheatPlus.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] All cleanup done.");
+            Bukkit.getLogger().info("[NoCheatPlus] All cleanup done.");
         }
         final PluginDescriptionFile pdfFile = getDescription();
-        StaticLog.logInfo("[NoCheatPlus] Version " + pdfFile.getVersion() + " is disabled.");
+        Bukkit.getLogger().info("[NoCheatPlus] Version " + pdfFile.getVersion() + " is disabled.");
     }
 
 
@@ -646,7 +655,13 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
      */
     @Override
     public void onLoad() {
+        Bukkit.getLogger().info("[NoCheatPlus] Setting up static API, config, logging.");
         NCPAPIProvider.setNoCheatPlusAPI(this);
+        // Read the configuration files.
+        ConfigManager.init(this); // TODO: Only load the bootstrap config (not all).
+        logManager = new LogManager(this);
+        StaticLog.setUseBukkitLogger(true);
+        logManager.info(Streams.INIT, "[NoCheatPlus] Logging system initialized.");
     }
 
     /* (non-Javadoc)
@@ -661,15 +676,17 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         TickTask.cancel();
         TickTask.reset();
 
+        // Start logger task(s).
+        logManager.startTasks();
+
         // Register some generic stuff.
         // Counters: debugging purposes, maybe integrated for statistics later.
         registerGenericInstance(new Counters());
 
-        // Read the configuration files.
-        ConfigManager.init(this);
-
-        // Setup file logger.
-        StaticLogFile.setupLogger(new File(getDataFolder(), ConfigManager.getConfigFile().getString(ConfPaths.LOGGING_BACKEND_FILE_FILENAME)));
+        if (!ConfigManager.isInitialized()) {
+            // Read the configuration files (should only happen on reloading).
+            ConfigManager.init(this);
+        }
 
         final ConfigFile config = ConfigManager.getConfigFile();
 
@@ -781,7 +798,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         configProblems = Updates.isConfigUpToDate(config);
         if (configProblems != null && config.getBoolean(ConfPaths.CONFIGVERSION_NOTIFY)){
             // Could use custom prefix from logging, however ncp should be mentioned then.
-            StaticLog.logWarning("[NoCheatPlus] " + configProblems);
+            logManager.warning(Streams.INIT, "[NoCheatPlus] " + configProblems);
         }
 
         // TODO: re-map ExemptionManager !
@@ -795,14 +812,14 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         });
 
         // Tell the server administrator that we finished loading NoCheatPlus now.
-        StaticLog.logInfo("[NoCheatPlus] Version " + getDescription().getVersion() + " is enabled.");
+        logManager.info(Streams.INIT, "[NoCheatPlus] Version " + getDescription().getVersion() + " is enabled.");
     }
 
     /**
      * Actions to be done after enable of  all plugins. This aims at reloading mainly.
      */
     private void postEnable(final Player[] onlinePlayers){
-        StaticLog.logInfo("[NoCheatPlus] Post-enable running...");
+        logManager.info(Streams.INIT, "[NoCheatPlus] Post-enable running...");
 
         for (final Player player : onlinePlayers){
             updatePermStateReceivers(player);
@@ -812,7 +829,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             }
         }
         // TODO: if (online.lenght > 0) LogUtils.logInfo("[NCP] Updated " + online.length + "players (post-enable).")
-        StaticLog.logInfo("[NoCheatPlus] Post-enable finished.");
+        logManager.info(Streams.INIT, "[NoCheatPlus] Post-enable finished.");
     }
 
     /**
@@ -847,7 +864,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
     }
 
     @Override
-    public MCAccess getMCAccess(){
+    public MCAccess getMCAccess() {
         if (mcAccess == null) initMCAccess();
         return mcAccess;
     }
@@ -890,12 +907,12 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
                 try{
                     ((MCAccessHolder) obj).setMCAccess(mcAccess);
                 } catch(Throwable t){
-                    StaticLog.logSevere("[NoCheatPlus] MCAccessHolder(" + obj.getClass().getName() + ") failed to set MCAccess: " + t.getClass().getSimpleName());
-                    StaticLog.logSevere(t);
+                    logManager.severe(Streams.INIT, "[NoCheatPlus] MCAccessHolder(" + obj.getClass().getName() + ") failed to set MCAccess: " + t.getClass().getSimpleName());
+                    logManager.severe(Streams.INIT, t);
                 }
             }
         }
-        StaticLog.logInfo("[NoCheatPlus] McAccess set to: " + mcAccess.getMCVersion() + " / " + mcAccess.getServerVersionTag());
+        logManager.info(Streams.INIT, "[NoCheatPlus] McAccess set to: " + mcAccess.getMCVersion() + " / " + mcAccess.getServerVersionTag());
     }
 
     /**
@@ -994,8 +1011,8 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
                 jlListener.playerJoins(player);
             }
             catch(Throwable t){
-                StaticLog.logSevere("[NoCheatPlus] JoinLeaveListener(" + jlListener.getClass().getName() + ") generated an exception (join): " + t.getClass().getSimpleName());
-                StaticLog.logSevere(t);
+                logManager.severe(Streams.INIT, "[NoCheatPlus] JoinLeaveListener(" + jlListener.getClass().getName() + ") generated an exception (join): " + t.getClass().getSimpleName());
+                logManager.severe(Streams.INIT, t);
             }
         }
         // Mod message (left on low instead of lowest to allow some permissions plugins compatibility).
@@ -1011,8 +1028,8 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
                 jlListener.playerLeaves(player);
             }
             catch(Throwable t){
-                StaticLog.logSevere("[NoCheatPlus] JoinLeaveListener(" + jlListener.getClass().getName() + ") generated an exception (leave): " + t.getClass().getSimpleName());
-                StaticLog.logSevere(t);
+                logManager.severe(Streams.INIT, "[NoCheatPlus] JoinLeaveListener(" + jlListener.getClass().getName() + ") generated an exception (leave): " + t.getClass().getSimpleName());
+                logManager.severe(Streams.INIT, t);
             }
         }
     }
@@ -1068,9 +1085,9 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             try{
                 checker.checkConsistency(onlinePlayers);
             }
-            catch (Throwable t){
-                StaticLog.logSevere("[NoCheatPlus] ConsistencyChecker(" + checker.getClass().getName() + ") encountered an exception:");
-                StaticLog.logSevere(t);
+            catch (Throwable t) {
+                logManager.severe(Streams.INIT, "[NoCheatPlus] ConsistencyChecker(" + checker.getClass().getName() + ") encountered an exception:");
+                logManager.severe(Streams.INIT, t);
             }
             consistencyCheckerIndex ++; // Do not remove :).
             final long now = System.currentTimeMillis();
@@ -1091,11 +1108,11 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
                 }
             });
             if (debug){
-                StaticLog.logInfo("[NoCheatPlus] Re-scheduled consistency-checks.");
+                logManager.info(Streams.TRACE_FILE, "[NoCheatPlus] Re-scheduled consistency-checks.");
             }
         }
         else if (debug){
-            StaticLog.logInfo("[NoCheatPlus] Consistency-checks run.");
+            logManager.info(Streams.TRACE_FILE, "[NoCheatPlus] Consistency-checks run.");
         }
     }
 

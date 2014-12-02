@@ -51,7 +51,9 @@ public class ConfigManager {
 		}
 		
 	};
-    
+
+    private static boolean isInitialized = false;
+
     /**
      * Factory method.
      * @param library
@@ -114,8 +116,9 @@ public class ConfigManager {
      * Cleanup.
      */
     public static void cleanup() {
-    	
+        isInitialized = false;
         setActionFactoryFactory(null);
+        // TODO: Remove references of config files ?
     }
 
     /**
@@ -266,8 +269,17 @@ public class ConfigManager {
 //            worldConfig.setActionFactory();
         }
         ConfigManager.worldsMap = newWorldsMap;
+        isInitialized = true;
     }
-    
+
+    /**
+     * Informal test if the init method completed (no details are reflected).
+     * @return
+     */
+    public static boolean isInitialized() {
+        return isInitialized;
+    }
+
     /**
      * Set a property for all configurations. Might use with DataManager.clearConfigs if check-configurations might already be in use.
      * @param path

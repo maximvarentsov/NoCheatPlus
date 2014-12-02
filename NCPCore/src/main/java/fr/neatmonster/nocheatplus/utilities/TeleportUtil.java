@@ -1,5 +1,7 @@
 package fr.neatmonster.nocheatplus.utilities;
 
+import fr.neatmonster.nocheatplus.NCPAPIProvider;
+import fr.neatmonster.nocheatplus.logging.Streams;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -38,8 +40,8 @@ public class TeleportUtil {
 			// TODO: Does VehicleEnter fire here !?  Consequences?
 			vehicle.setPassenger(player);
 		}
-		if (debug){
-			System.out.println(player.getName() + " vehicle set back: " + location);
+		if (debug) {
+			NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(Streams.TRACE_FILE, player.getName() + " vehicle set back: " + location);
 		}
 		useLoc.setWorld(null);
 	}

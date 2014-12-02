@@ -935,7 +935,7 @@ public class BlockProperties {
 
 	/**
 	 * Convenience method.
-	 * @param blockType
+	 * @param BlockType blockType
 	 * @param player
 	 * @return
 	 */
@@ -957,7 +957,7 @@ public class BlockProperties {
 
 	/**
 	 * TODO: repair signature some day (rid of PlayerLocation).
-	 * @param BlockId
+	 * @param blockId BlockId
 	 * @param itemInHand May be null.
 	 * @param helmet May be null.
 	 * @param location The normal location of a player.
@@ -1510,7 +1510,7 @@ public class BlockProperties {
 	/**
 	 * Test if a position can be passed through (collidesBlock + passable test, no fences yet).<br>
 	 * NOTE: This is experimental.
-	 * @param world
+	 * @param access
 	 * @param x
 	 * @param y
 	 * @param z
@@ -1549,7 +1549,7 @@ public class BlockProperties {
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @param id
+	 * @param z
 	 * @return
 	 */
 	public static final boolean isPassableH150(final BlockCache access, final double x, final double y, final double z) {
@@ -2344,7 +2344,7 @@ public class BlockProperties {
 		final int iMaxY = Math.min(Location.locToBlock(maxY), maxBlockY);
 		final int iMinZ = Location.locToBlock(minZ);
 		final int iMaxZ = Location.locToBlock(maxZ);
-		//    	System.out.println("*** isOnGround check size: " + ((iMaxX - iMinX + 1) * (iMaxY - iMinY + 1) * (iMaxZ - iMinZ + 1)));
+		//    	NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(LogManager.TRACE_FILE, "*** isOnGround check size: " + ((iMaxX - iMinX + 1) * (iMaxY - iMinY + 1) * (iMaxZ - iMinZ + 1)));
 		for (int x = iMinX; x <= iMaxX; x++) {
 			for (int z = iMinZ; z <= iMaxZ; z++) {
 
@@ -2601,7 +2601,7 @@ public class BlockProperties {
 		final int iMaxY = Location.locToBlock(maxY);
 		final int iMinZ = Location.locToBlock(minZ);
 		final int iMaxZ = Location.locToBlock(maxZ);
-		//    	System.out.println("*** collect flags check size: " + ((iMaxX - iMinX + 1) * (iMaxY - iMinY + 1) * (iMaxZ - iMinZ + 1)));
+		//    	NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(LogManager.TRACE_FILE, "*** collect flags check size: " + ((iMaxX - iMinX + 1) * (iMaxY - iMinY + 1) * (iMaxZ - iMinZ + 1)));
 		long flags = 0;
 		for (int x = iMinX; x <= iMaxX; x++) {
 			for (int z = iMinZ; z <= iMaxZ; z++) {

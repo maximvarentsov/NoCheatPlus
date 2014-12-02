@@ -1,5 +1,7 @@
 package fr.neatmonster.nocheatplus.checks.moving;
 
+import fr.neatmonster.nocheatplus.NCPAPIProvider;
+import fr.neatmonster.nocheatplus.logging.Streams;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -39,7 +41,7 @@ public class NoFall extends Check {
     
     /**
      * Deal damage if appropriate. To be used for if the player is on ground somehow.
-     * @param mcPlayer
+     * @param player
      * @param data
      * @param y
      */
@@ -52,8 +54,9 @@ public class NoFall extends Check {
         if (maxD >= 1.0){
             // Damage to be dealt.
             // TODO: more effects like sounds, maybe use custom event with violation added.
-            if (cc.debug) System.out.println(player.getName() + " NoFall deal damage" + (reallyOnGround ? "" : "violation") + ": " + maxD);
-            // TODO: might not be necessary: if (mcPlayer.invulnerableTicks <= 0)  [no damage event for resetting]
+            if (cc.debug) {
+                NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(Streams.TRACE_FILE, player.getName() + " NoFall deal damage" + (reallyOnGround ? "" : "violation") + ": " + maxD);
+            }// TODO: might not be necessary: if (mcPlayer.invulnerableTicks <= 0)  [no damage event for resetting]
             data.noFallSkipAirCheck = true;
 			dealFallDamage(player, maxD);
         }
@@ -170,8 +173,8 @@ public class NoFall extends Check {
         else if (cc.noFallAntiCriticals && (toReset || toOnGround || (fromReset || fromOnGround || data.noFallAssumeGround) && yDiff >= 0)){
         	final double max = Math.max(data.noFallFallDistance, mcFallDistance);
         	if (max > 0.0 && max < 0.75){ // (Ensure this does not conflict with deal-damage set to false.) 
-                if (cc.debug){
-                	System.out.println(player.getName() + " NoFall: Reset fall distance (anticriticals): mc=" + StringUtil.fdec3.format(mcFallDistance) +" / nf=" + StringUtil.fdec3.format(data.noFallFallDistance) );
+                if (cc.debug) {
+                    NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(Streams.TRACE_FILE, player.getName() + " NoFall: Reset fall distance (anticriticals): mc=" + StringUtil.fdec3.format(mcFallDistance) + " / nf=" + StringUtil.fdec3.format(data.noFallFallDistance));
                 }
             	if (data.noFallFallDistance > 0){
             		data.noFallFallDistance = 0;
@@ -182,8 +185,8 @@ public class NoFall extends Check {
         	}
         }
         
-        if (cc.debug){
-        	System.out.println(player.getName() + " NoFall: mc=" + StringUtil.fdec3.format(mcFallDistance) +" / nf=" + StringUtil.fdec3.format(data.noFallFallDistance) + (oldNFDist < data.noFallFallDistance ? " (+" + StringUtil.fdec3.format(data.noFallFallDistance - oldNFDist) + ")" : "") + " | ymax=" + StringUtil.fdec3.format(data.noFallMaxY));
+        if (cc.debug) {
+            NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(Streams.TRACE_FILE, player.getName() + " NoFall: mc=" + StringUtil.fdec3.format(mcFallDistance) +" / nf=" + StringUtil.fdec3.format(data.noFallFallDistance) + (oldNFDist < data.noFallFallDistance ? " (+" + StringUtil.fdec3.format(data.noFallFallDistance - oldNFDist) + ")" : "") + " | ymax=" + StringUtil.fdec3.format(data.noFallMaxY));
         }
         
     }

@@ -13,7 +13,7 @@ public class AxisVelocity {
     
     /** Velocity with a smaller absolute amount is removed. */
     private static final double minValue = 0.001;
-    
+
     private static final double frictionFactor = 0.93;
     
     private final List<Velocity> queued = new ArrayList<Velocity>();
@@ -80,7 +80,7 @@ public class AxisVelocity {
             // TODO: Could check for alternating signum (error).
             final Velocity vel = it.next();
             if (vel.actCount <= 0 || vel.tick < tick) {
-//              System.out.println("Invalidate queued: " + vel);
+//              NCPAPIProvider.getNoCheatPlusAPI().getLogManager().debug(LogManager.TRACE_FILE, "Invalidate queued: " + vel);
                 it.remove();
             }
         }
