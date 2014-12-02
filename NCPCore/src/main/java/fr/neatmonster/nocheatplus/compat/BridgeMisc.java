@@ -1,7 +1,9 @@
 package fr.neatmonster.nocheatplus.compat;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -13,7 +15,7 @@ import org.bukkit.entity.Projectile;
  *
  */
 public class BridgeMisc {
-	
+
 	/**
 	 * Return a shooter of a projectile if we get an entity, null otherwise.
 	 */
@@ -38,7 +40,7 @@ public class BridgeMisc {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Retrieve a player from projectiles or cast to player, if possible.
 	 * @param damager
@@ -53,5 +55,23 @@ public class BridgeMisc {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Get online players as an array (convenience for reducing IDE markers :p).
+	 * @return
+	 */
+	public static Player[] getOnlinePlayers() {
+		Object obj = Bukkit.getOnlinePlayers();
+		if (obj instanceof Collection<?>) {
+			@SuppressWarnings("unchecked")
+			Collection<? extends Player> players = (Collection<? extends Player>) obj;
+			return players.toArray(new Player[players.size()]);
+		}
+		else if (obj instanceof Player[]) {
+			return (Player[]) obj;
+		} else {
+			return new Player[0];
+		}
+	}
+
 }

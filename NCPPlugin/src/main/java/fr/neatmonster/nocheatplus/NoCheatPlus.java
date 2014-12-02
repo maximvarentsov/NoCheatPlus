@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import fr.neatmonster.nocheatplus.compat.BridgeMisc;
 import fr.neatmonster.nocheatplus.logging.LogManager;
 import fr.neatmonster.nocheatplus.logging.Streams;
 import org.bukkit.Bukkit;
@@ -1083,7 +1084,7 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         }
         final long tEnd = tStart + config.getLong(ConfPaths.DATA_CONSISTENCYCHECKS_MAXTIME, 1, 50, 2);
         if (consistencyCheckerIndex >= consistencyCheckers.size()) consistencyCheckerIndex = 0;
-        final Player[] onlinePlayers = getServer().getOnlinePlayers();
+        final Player[] onlinePlayers = BridgeMisc.getOnlinePlayers();
         // Loop
         while (consistencyCheckerIndex < consistencyCheckers.size()){
             final ConsistencyChecker checker = consistencyCheckers.get(consistencyCheckerIndex);
