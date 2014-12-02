@@ -52,7 +52,7 @@ public class MovingData extends ACheckData {
 
     /**
      * Gets the data of a specified player.
-     * 
+     *
      * @param player
      *            the player
      * @return the data
@@ -122,7 +122,7 @@ public class MovingData extends ACheckData {
     public double         verticalFreedom;
     public double         verticalVelocity;
     public int            verticalVelocityUsed = 0;
-    
+
     /** Horizontal velocity modeled as an axis (always positive) */
     private final AxisVelocity horVel = new AxisVelocity();
 
@@ -131,8 +131,8 @@ public class MovingData extends ACheckData {
     public double         fromX = Double.MAX_VALUE, fromY, fromZ;
     /** Last to coordinates. */
     public double 		  toX = Double.MAX_VALUE, toY, toZ;
-    /** Moving trace (to positions). This is initialized on "playerJoins, i.e. MONITOR, and set to null on playerLeaves."*/
-    private LocationTrace trace = null; 
+    /** Moving trace (to-positions, use tick as time). This is initialized on "playerJoins, i.e. MONITOR, and set to null on playerLeaves."*/
+    private LocationTrace trace = null;
 
     // sf rather
     /** To/from was ground or web or assumed to be etc. */
@@ -159,7 +159,7 @@ public class MovingData extends ACheckData {
     public int            morePacketsVehicleBuffer = 50;
     public long           morePacketsVehicleLastTime;
     private Location      morePacketsVehicleSetback = null;
-    /** Task id of the morepackets set-back task. */ 
+    /** Task id of the morepackets set-back task. */
     public int			  morePacketsVehicleTaskId = -1;
 
 
@@ -169,7 +169,7 @@ public class MovingData extends ACheckData {
     public double         noFallMaxY = 0;
     /** Indicate that NoFall should assume the player to be on ground. */
     public boolean noFallAssumeGround = false;
-    /** Indicate that NoFall is not to use next damage event for checking on-ground properties. */ 
+    /** Indicate that NoFall is not to use next damage event for checking on-ground properties. */
     public boolean noFallSkipAirCheck = false;
     // Passable check.
     public double 	      passableVL;
@@ -205,7 +205,7 @@ public class MovingData extends ACheckData {
 
 
     // HOT FIX
-    /** Inconsistency-flag. Set on moving inside of vehicles, reset on exiting properly. Workaround for VehicleLeaveEvent missing. */ 
+    /** Inconsistency-flag. Set on moving inside of vehicles, reset on exiting properly. Workaround for VehicleLeaveEvent missing. */
     public boolean wasInVehicle = false;
     public MoveConsistency vehicleConsistency = MoveConsistency.INCONSISTENT;
 
@@ -241,7 +241,7 @@ public class MovingData extends ACheckData {
 
     /**
      * Teleport event: Mildly reset the flying data without losing any important information.
-     * 
+     *
      * @param setBack
      */
     public void onSetBack(final Location setBack) {
@@ -526,7 +526,7 @@ public class MovingData extends ACheckData {
     public void addHorizontalVelocity(final Velocity vel) {
         horVel.add(vel);
     }
-    
+
     /**
      * Add vertical velocity (distance). <br>
      * @param vel
@@ -559,7 +559,7 @@ public class MovingData extends ACheckData {
     public void clearActiveHorVel() {
         horVel.clearActive();
     }
-    
+
     /**
      * Clear only active horizontal velocity.
      */
@@ -574,7 +574,7 @@ public class MovingData extends ACheckData {
     public boolean hasQueuedHorVel() {
         return horVel.hasQueued();
     }
-    
+
 //    public boolean hasActiveVerVel() {
 //        return verVel.hasActive();
 //    }
@@ -589,7 +589,7 @@ public class MovingData extends ACheckData {
     public void velocityTick() {
         // Horizontal velocity (intermediate concept).
         horVel.tick();
-        
+
         // Vertical velocity (new concept).
 //        verVel.tick();
         if (verticalVelocity <= 0.09D) {
@@ -765,10 +765,10 @@ public class MovingData extends ACheckData {
 
     /**
      * Convenience: Create or just reset the trace, add the current location.
-     * @param loc 
+     * @param loc
      * @param size
      * @param mergeDist
-     * @param traceMergeDist 
+     * @param traceMergeDist
      */
     public void resetTrace(final Location loc, final long time, final int size, double mergeDist) {
         if (trace == null || trace.getMaxSize() != size || trace.getMergeDist() != mergeDist) {

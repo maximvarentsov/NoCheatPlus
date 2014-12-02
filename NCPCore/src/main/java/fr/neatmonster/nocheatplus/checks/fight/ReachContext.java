@@ -6,7 +6,7 @@ package fr.neatmonster.nocheatplus.checks.fight;
  *
  */
 public class ReachContext {
-	
+
 	public double distanceLimit;
 	public double distanceMin;
 	public double damagedHeight;

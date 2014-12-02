@@ -17,15 +17,15 @@ import fr.neatmonster.nocheatplus.utilities.TrigUtil;
  *
  */
 public class LocationTrace {
-	
+
 	public static final class TraceEntry {
-		
+
 		/** We keep it open, if ticks or ms are used. */
 		public long time;
 		/** Coordinates. */
 		public double x, y, z;
 		public double lastDistSq;
-		
+
 		public void set(long time, double x, double y, double z, double lastDistSq) {
 			this.x = x;
 			this.y = y;
@@ -34,7 +34,7 @@ public class LocationTrace {
 			this.lastDistSq = lastDistSq;
 		}
 	}
-	
+
 	/**
 	 * Iterate from oldest to latest. Not a fully featured Iterator.
 	 * @author mc_dev
@@ -47,9 +47,9 @@ public class LocationTrace {
 		private final int size;
 		private int currentIndex;
 		private final boolean ascend;
-		
+
 		protected TraceIterator(TraceEntry[] entries, int index, int size, int currentIndex, boolean ascend) {
-			if (currentIndex >= entries.length || currentIndex < 0 || 
+			if (currentIndex >= entries.length || currentIndex < 0 ||
 					currentIndex <= index - size || currentIndex > index && currentIndex <= index - size + entries.length) {
 				// This should also prevent iterators for size == 0, for the moment (!).
 				throw new IllegalArgumentException("startIndex out of bounds.");
@@ -60,7 +60,7 @@ public class LocationTrace {
 			this.currentIndex = currentIndex;
 			this.ascend = ascend;
 		}
-		
+
 		@Override
 		public final TraceEntry next() {
 			if (!hasNext()) {
@@ -92,20 +92,20 @@ public class LocationTrace {
 			}
 			return entry;
 		}
-		
+
 		@Override
 		public final boolean hasNext() {
 			// Just check if currentIndex is within range.
 			return currentIndex >= 0 && currentIndex <= index && currentIndex > index - size || currentIndex > index && currentIndex >= index - size + entries.length;
 		}
-		
+
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 	}
-	
+
 	/** A Ring. */
 	private final TraceEntry[] entries;
 	/** Last element index. */
@@ -114,11 +114,11 @@ public class LocationTrace {
 	private int size = 0;
 	private final double mergeDist;
 	private final double mergeDistSq;
-	
+
 	// (No world name stored: Should be reset on world changes.)
-	
+
 	public LocationTrace(int bufferSize, double mergeDist) {
-		// TODO: Might consider a cut-off distance/age (performance saving for iteration). 
+		// TODO: Might consider a cut-off distance/age (performance saving for iteration).
 		if (bufferSize < 1) {
 			throw new IllegalArgumentException("Expect bufferSize > 0, got instead: " + bufferSize);
 		}
@@ -129,7 +129,7 @@ public class LocationTrace {
 		this.mergeDist = mergeDist;
 		this.mergeDistSq = mergeDist * mergeDist;
 	}
-	
+
 	public final void addEntry(final long time, final double x, final double y, final double z) {
 		double lastDistSq = 0.0;
 		if (size > 0) {
@@ -164,13 +164,13 @@ public class LocationTrace {
 		final TraceEntry newEntry = entries[index];
 		newEntry.set(time, x, y, z, lastDistSq);
 	}
-	
+
 	/** Reset content pointers - call with world changes. */
 	public void reset() {
 		index = 0;
 		size = 0;
 	}
-	
+
 	/**
 	 * Get the actual number of valid elements. After some time of moving this should be entries.length.
 	 * @return
@@ -181,7 +181,7 @@ public class LocationTrace {
 	public boolean isEmpty() {
 		return size == 0;
 	}
-	
+
 	/**
 	 * Get size of ring buffer (maximal possible number of elements).
 	 * @return
@@ -189,11 +189,11 @@ public class LocationTrace {
 	public int getMaxSize() {
 		return entries.length;
 	}
-	
+
 	public double getMergeDist() {
 		return mergeDist;
 	}
-	
+
 	/**
 	 * Iterate from latest to oldest.
 	 * @return
@@ -201,7 +201,7 @@ public class LocationTrace {
 	public TraceIterator latestIterator() {
 		return new TraceIterator(entries, index, size, index, false);
 	}
-	
+
 	/**
 	 * Iterate from oldest to latest.
 	 * @return
@@ -210,13 +210,12 @@ public class LocationTrace {
 		final int currentIndex = index - size + 1;
 		return new TraceIterator(entries, index, size, currentIndex < 0 ? currentIndex + entries.length : currentIndex, true);
 	}
-	
-	
+
+
 	/**
 	 * Iterate from entry with max. age to latest, always includes latest.
-	 * @param tick Absolute tick value for oldest accepted tick.
-	 * @param ms Absolute ms value for oldest accepted ms;
-	 * @return
+	 * @param time Absolute time value for oldest accepted entries.
+	 * @return TraceIterator containing entries that have not been created before the given time, iterating ascending with time.
 	 */
 	public TraceIterator maxAgeIterator(long time) {
 		int currentIndex = index;
@@ -238,5 +237,5 @@ public class LocationTrace {
 		}
 		return new TraceIterator(entries, index, size, currentIndex, true);
 	}
-	
+
 }
