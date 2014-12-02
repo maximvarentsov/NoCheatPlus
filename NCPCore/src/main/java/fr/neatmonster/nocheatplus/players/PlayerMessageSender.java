@@ -13,7 +13,7 @@ import fr.neatmonster.nocheatplus.utilities.OnDemandTickListener;
  *
  */
 public class PlayerMessageSender extends OnDemandTickListener {
-	
+
 	private final class MessageEntry{
 		public final String playerName;
 		public final String message;
@@ -22,7 +22,7 @@ public class PlayerMessageSender extends OnDemandTickListener {
 			this.message = message;
 		}
 	}
-	
+
 	/** Queued entries, also used as lock. */
 	private List<MessageEntry> messageEntries = new LinkedList<MessageEntry>();
 
@@ -41,7 +41,7 @@ public class PlayerMessageSender extends OnDemandTickListener {
 			messageEntries = new LinkedList<PlayerMessageSender.MessageEntry>();
 		}
 		// Do messaging.
-		for (final MessageEntry entry : entries) {
+		for (final MessageEntry entry : entries){
 			final Player player = DataManager.getPlayerExact(entry.playerName);
 			if (player != null && player.isOnline()){
 				player.sendMessage(entry.message);
@@ -49,7 +49,7 @@ public class PlayerMessageSender extends OnDemandTickListener {
 		}
 		// Unregister if no further entries are there.
 		synchronized (this) {
-			if (messageEntries.isEmpty()) {
+			if (messageEntries.isEmpty()){
 				// Force unregister.
 				unRegister(true);
 			}
@@ -57,7 +57,7 @@ public class PlayerMessageSender extends OnDemandTickListener {
 		// Always continue here to never use external setRegistered.
 		return true;
 	}
-	
+
 	public void sendMessageThreadSafe(final String playerName, final String message){
 		final MessageEntry entry = new MessageEntry(playerName.toLowerCase(), message);
 		synchronized (this) {
