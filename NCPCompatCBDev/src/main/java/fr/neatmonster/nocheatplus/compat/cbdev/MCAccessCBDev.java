@@ -24,7 +24,7 @@ import fr.neatmonster.nocheatplus.utilities.BlockCache;
 import fr.neatmonster.nocheatplus.utilities.ReflectionUtil;
 
 public class MCAccessCBDev implements MCAccess{
-	
+
 	/**
 	 * Constructor to let it fail.
 	 */
@@ -107,7 +107,7 @@ public class MCAccessCBDev implements MCAccess{
 			// This can not really test stance but height of bounding box.
 			final double dY = Math.abs(box.e - box.b);
 			if (dY > 1.8) {
-				return AlmostBoolean.YES; // dY > 1.65D || 
+				return AlmostBoolean.YES; // dY > 1.65D ||
 			}
 			if (dY < 0.1D && entityPlayer.length >= 0.1) {
 				return AlmostBoolean.YES;
@@ -167,23 +167,23 @@ public class MCAccessCBDev implements MCAccess{
 	@Override
 	public void setDead(final Player player, final int deathTicks) {
 		final EntityPlayer mcPlayer = ((CraftPlayer) player).getHandle();
-        mcPlayer.deathTicks = deathTicks;
-        mcPlayer.dead = true;
+		mcPlayer.deathTicks = deathTicks;
+		mcPlayer.dead = true;
 	}
-	
+
 	@Override
 	public boolean hasGravity(final Material mat) {
 		// TODO: Test/check.
 		return mat.hasGravity();
 	}
-	
-//	@Override
-//	public void correctDirection(final Player player) {
-//		final EntityPlayer mcPlayer = ((CraftPlayer) player).getHandle();
-//		// Main direction.
-//		mcPlayer.yaw = LocUtil.correctYaw(mcPlayer.yaw);
-//		mcPlayer.pitch = LocUtil.correctPitch(mcPlayer.pitch);
-//		// Consider setting the lastYaw here too.
-//	}
-	
+
+	//	@Override
+	//	public void correctDirection(final Player player) {
+	//		final EntityPlayer mcPlayer = ((CraftPlayer) player).getHandle();
+	//		// Main direction.
+	//		mcPlayer.yaw = LocUtil.correctYaw(mcPlayer.yaw);
+	//		mcPlayer.pitch = LocUtil.correctPitch(mcPlayer.pitch);
+	//		// Consider setting the lastYaw here too.
+	//	}
+
 }

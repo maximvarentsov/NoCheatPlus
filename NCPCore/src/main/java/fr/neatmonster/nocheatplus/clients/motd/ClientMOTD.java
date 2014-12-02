@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
  *
  */
 public abstract class ClientMOTD {
-	
+
 	/**
 	 * Extend / manipulate the message based on permissions and the allowAll setting.
 	 * @param message

@@ -1,8 +1,14 @@
 package fr.neatmonster.nocheatplus.clients;
 
-import fr.neatmonster.nocheatplus.clients.motd.*;
 import org.bukkit.entity.Player;
 
+import fr.neatmonster.nocheatplus.clients.motd.CJBMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.ClientMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.JourneyMapMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.MCAutoMapMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.ReiMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.SmartMovingMOTD;
+import fr.neatmonster.nocheatplus.clients.motd.ZombeMOTD;
 import fr.neatmonster.nocheatplus.config.ConfPaths;
 import fr.neatmonster.nocheatplus.config.ConfigFile;
 import fr.neatmonster.nocheatplus.config.ConfigManager;
@@ -13,14 +19,15 @@ import fr.neatmonster.nocheatplus.config.ConfigManager;
  *
  */
 public class ModUtil {
-	
+
+	// TODO: Consider to register individual codes in a generic way, detect conflicts (+tests?).
 	private static final ClientMOTD[] motdS = new ClientMOTD[]{
-		new ReiMOTD(),
-		new ZombeMOTD(),
-		new SmartMovingMOTD(),
-		new CJBMOTD(),
-		new MCAutoMapMOTD(),
-		new JourneyMapMOTD()
+			new ReiMOTD(),
+			new ZombeMOTD(),
+			new SmartMovingMOTD(),
+			new CJBMOTD(),
+			new MCAutoMapMOTD(),
+			new JourneyMapMOTD()
 	};
 
 	/**
@@ -28,25 +35,25 @@ public class ModUtil {
 	 * @param player
 	 */
 	public static void motdOnJoin(final Player player) {
-		final ConfigFile config = ConfigManager.getConfigFile(); 
+		final ConfigFile config = ConfigManager.getConfigFile();
 		if (!config.getBoolean(ConfPaths.PROTECT_CLIENTS_MOTD_ACTIVE)){
 			// No message is to be sent.
 			return;
 		}
 		// TODO: Somebody test this all !
-	    // TODO: add feature to check world specific (!).
-	
-	    // Check if we allow all the client mods.
-	    final boolean allowAll = config.getBoolean(ConfPaths.PROTECT_CLIENTS_MOTD_ALLOWALL);
-	    
-	    String message = "";
-	    for (int i = 0; i < motdS.length; i++){
-	    	message = motdS[i].onPlayerJoin(message, player, allowAll);
-	    }
-	
-	    if (!message.isEmpty()){
-	    	player.sendMessage(message);
-	    }
+		// TODO: add feature to check world specific (!).
+
+		// Check if we allow all the client mods.
+		final boolean allowAll = config.getBoolean(ConfPaths.PROTECT_CLIENTS_MOTD_ALLOWALL);
+
+		String message = "";
+		for (int i = 0; i < motdS.length; i++){
+			message = motdS[i].onPlayerJoin(message, player, allowAll);
+		}
+
+		if (!message.isEmpty()){
+			player.sendMessage(message);
+		}
 	}
 
 }
