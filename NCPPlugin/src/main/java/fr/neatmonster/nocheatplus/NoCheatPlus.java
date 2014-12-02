@@ -676,13 +676,10 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
         TickTask.cancel();
         TickTask.reset();
 
-        // Start logger task(s).
-        logManager.startTasks();
+        // Allow entries to TickTask (just in case).
+        TickTask.setLocked(false);
 
-        // Register some generic stuff.
-        // Counters: debugging purposes, maybe integrated for statistics later.
-        registerGenericInstance(new Counters());
-
+        // Initialize configuration, if needed.
         if (!ConfigManager.isInitialized()) {
             // Read the configuration files (should only happen on reloading).
             ConfigManager.init(this);
@@ -692,18 +689,8 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         useSubscriptions = config.getBoolean(ConfPaths.LOGGING_BACKEND_INGAMECHAT_SUBSCRIPTIONS);
 
-        // Initialize MCAccess.
-        initMCAccess(config);
-
-        // Initialize BlockProperties.
-        initBlockProperties(config);
-
-        // Initialize data manager.
-        disableListeners.add(0, dataMan);
-        dataMan.onEnable();
-
-        // Allow entries to TickTask (just in case).
-        TickTask.setLocked(false);
+        // Start logger task(s).
+        logManager.startTasks();
 
         // List the events listeners and register.
         manageListeners = config.getBoolean(ConfPaths.COMPATIBILITY_MANAGELISTENERS);
@@ -717,6 +704,21 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             listenerManager.clear();
         }
 
+        // Register some generic stuff.
+        // Counters: debugging purposes, maybe integrated for statistics later.
+        registerGenericInstance(new Counters());
+
+        // Initialize MCAccess.
+        initMCAccess(config);
+
+        // Initialize BlockProperties.
+        initBlockProperties(config);
+
+        // Initialize data manager.
+        disableListeners.add(0, dataMan);
+        dataMan.onEnable();
+
+        // Register components.
         @SetupOrder(priority = - 100)
         class ReloadHook implements INotifyReload{
             @Override
