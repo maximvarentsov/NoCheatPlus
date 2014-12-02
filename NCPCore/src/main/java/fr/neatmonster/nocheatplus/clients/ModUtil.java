@@ -1,13 +1,8 @@
 package fr.neatmonster.nocheatplus.clients;
 
+import fr.neatmonster.nocheatplus.clients.motd.*;
 import org.bukkit.entity.Player;
 
-import fr.neatmonster.nocheatplus.clients.motd.CJBMOTD;
-import fr.neatmonster.nocheatplus.clients.motd.ClientMOTD;
-import fr.neatmonster.nocheatplus.clients.motd.MCAutoMapMOTD;
-import fr.neatmonster.nocheatplus.clients.motd.ReiMOTD;
-import fr.neatmonster.nocheatplus.clients.motd.SmartMovingMOTD;
-import fr.neatmonster.nocheatplus.clients.motd.ZombeMOTD;
 import fr.neatmonster.nocheatplus.config.ConfPaths;
 import fr.neatmonster.nocheatplus.config.ConfigFile;
 import fr.neatmonster.nocheatplus.config.ConfigManager;
@@ -24,7 +19,8 @@ public class ModUtil {
 		new ZombeMOTD(),
 		new SmartMovingMOTD(),
 		new CJBMOTD(),
-		new MCAutoMapMOTD()
+		new MCAutoMapMOTD(),
+		new JourneyMapMOTD()
 	};
 
 	/**
