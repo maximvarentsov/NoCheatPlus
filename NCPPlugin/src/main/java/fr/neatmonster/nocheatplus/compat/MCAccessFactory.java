@@ -3,7 +3,8 @@ package fr.neatmonster.nocheatplus.compat;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.neatmonster.nocheatplus.compat.cbdev.MCAccessCBDev;
+import fr.neatmonster.nocheatplus.compat.cb3100.MCAccessCB3100;
+import fr.neatmonster.nocheatplus.compat.cb3100.MCAccessCBDev;
 import org.bukkit.Bukkit;
 
 import fr.neatmonster.nocheatplus.compat.bukkit.MCAccessBukkit;
@@ -36,13 +37,18 @@ public class MCAccessFactory {
 			// TEMP //
 			// Only add as long as no stable module has been added.
 			// 1.8 (Spigot)
-			try{
+			try {
 				return new MCAccessCBDev();
-			}
-			catch(Throwable t) {
+			} catch(Throwable t) {
 				throwables.add(t);
 			}
 			// TEMP END //
+			// 1.7.10
+			try {
+				return new MCAccessCB3100();
+			} catch(Throwable t) {
+				throwables.add(t);
+			}
 		}
 		
 		// Try to set up api-only access (since 1.4.6).

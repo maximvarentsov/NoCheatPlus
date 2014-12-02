@@ -18,6 +18,7 @@
     <module>NCPCommons</module>
     <module>NCPCore</module>
     <module>NCPCompatBukkit</module>
+    <module>NCPCompatCB3100</module>
     <module>NCPCompatCBDev</module>
     <module>NCPCompatProtocolLib</module>
     <module>NCPPlugin</module>
