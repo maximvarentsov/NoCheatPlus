@@ -38,12 +38,6 @@ public class BukkitLogNodeDispatcher extends AbstractLogNodeDispatcher { // TODO
         // TODO: This is a temporary solution. Needs on-demand scheduling [or a wrapper task].
         TickTask.addTickListener(taskPrimary);
     }
-    
-    @Override
-    protected void logINIT(Level level, String message) {
-        // TODO: This is cheating !
-        
-    }
 
     @Override
     protected void scheduleAsynchronous() {
