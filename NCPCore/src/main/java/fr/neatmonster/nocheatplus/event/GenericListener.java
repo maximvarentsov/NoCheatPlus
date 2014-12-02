@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import fr.neatmonster.nocheatplus.NCPAPIProvider;
+import fr.neatmonster.nocheatplus.logging.Streams;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -13,8 +15,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
-
-import fr.neatmonster.nocheatplus.logging.StaticLog;
 
 /**
  * listener registered for one event only. Allows to delegate to other registered listeners.
@@ -113,15 +113,7 @@ public class GenericListener<E extends Event> implements Listener, EventExecutor
 
 	private void onError(final MethodEntry entry, final Event event, final Throwable t) {
 		final String descr = "GenericListener<" + clazz.getName() +"> @" + priority +" encountered an exception for " + entry.listener.getClass().getName() + " with method " + entry.method.toGenericString();
-		try{
-			final EventException e = new EventException(t, descr);
-			// TODO: log it / more details!
-			if (event.isAsynchronous()) StaticLog.scheduleLogSevere(e);
-			else StaticLog.logSevere(e);
-		}
-		catch (Throwable t2){
-			StaticLog.scheduleLogSevere("Could not log exception: " + descr);
-		}
+		NCPAPIProvider.getNoCheatPlusAPI().getLogManager().severe(Streams.SERVER_LOGGER, new EventException(t, descr));
 	}
 
 	public void register(Plugin plugin) {
