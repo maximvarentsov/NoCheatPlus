@@ -38,6 +38,7 @@ public class DefaultConfig extends ConfigFile {
                 set(ConfPaths.LOGGING_DEBUG, false);
                 set(ConfPaths.LOGGING_BACKEND_CONSOLE_ACTIVE, true);
                 set(ConfPaths.LOGGING_BACKEND_CONSOLE_PREFIX, "[NoCheatPlus] ");
+                set(ConfPaths.LOGGING_BACKEND_CONSOLE_ASYNCHRONOUS, true);
                 set(ConfPaths.LOGGING_BACKEND_FILE_ACTIVE, true);
                 set(ConfPaths.LOGGING_BACKEND_FILE_PREFIX, "");
                 set(ConfPaths.LOGGING_BACKEND_FILE_FILENAME, "nocheatplus.log");
