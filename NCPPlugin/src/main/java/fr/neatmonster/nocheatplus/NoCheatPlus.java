@@ -636,12 +636,13 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
 
         // Cleanup file logger.
         if (verbose) {
-            StaticLog.logInfo("[NoCheatPlus] Cleanup file logger...");
+            logManager.info(Streams.INIT, "[NoCheatPlus] Shutdown LogManager...");
         }
         StaticLog.setUseLogManager(false);
+        StaticLog.setStreamID(Streams.INIT);
         logManager.shutdown();
 
-        // Tell the server administrator the we finished unloading NoCheatPlus.
+        // Tell the server administrator that we finished unloading NoCheatPlus.
         if (verbose) {
             Bukkit.getLogger().info("[NoCheatPlus] All cleanup done.");
         }
@@ -813,6 +814,8 @@ public class NoCheatPlus extends JavaPlugin implements NoCheatPlusAPI {
             }
         });
 
+        // Set StaticLog to more efficient output.
+        StaticLog.setStreamID(Streams.STATUS);
         // Tell the server administrator that we finished loading NoCheatPlus now.
         logManager.info(Streams.INIT, "[NoCheatPlus] Version " + getDescription().getVersion() + " is enabled.");
     }
